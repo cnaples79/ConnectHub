@@ -12,6 +12,10 @@
 		<data>
 		nXKwqmOMKePj/WWJfwuw2PWplSM=
 		</data>
+		<key>Resources/MauiInfo.plist</key>
+		<data>
+		iEtuUGCV6JM3gxS/pO33swhmpp8=
+		</data>
 		<key>Resources/MonoTouchDebugConfiguration.txt</key>
 		<data>
 		oowkf1sL6T19nanXUObgmuayWqM=
@@ -54,28 +58,28 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			NiOjT7VDRPScc0tX0p+76Eubh9EEO3YW3UtvDZhT494=
+			Vg1mIZ4jXeejkcV9id88ddQ5bk7gvHPoKF7tV7LKcvA=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.App.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			8BjUi4F/R2wXlnP0GA8P8Kt0hGfZzKbiEExWXiuV89M=
+			NLzKgiYlz37O8ieqgoOUAVMgTxExVfbg7ibNV1BtRAI=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.Shared.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			t7pK7vmnUogvRV9t20kRD9uKwIb9ZmFELxYJtqHNGUM=
+			zThEtR71jkpOXVVqgptbwc1y3ASmlH6rLpndGydJd4w=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.Shared.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			VARAf/lWnI/ZLT/sXthZ0tGB0ZrtHa22CCKa+Hs4DhM=
+			pv3ifBfXe6JB2F1kfTYeZ72RaCDhieF8k6loVdLKwbw=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.AspNetCore.Connections.Abstractions.dll</key>
@@ -1028,6 +1032,13 @@
 			<key>hash2</key>
 			<data>
 			O5IQBl5HqQtC8bsVRF/ML9Ajezrtwb1JReotng0tg4I=
+			</data>
+		</dict>
+		<key>Resources/MauiInfo.plist</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			tx0KXqEC+DvcCGyogQTEQWHcCWJYYqH24NtPwhpQEjo=
 			</data>
 		</dict>
 		<key>Resources/MonoTouchDebugConfiguration.txt</key>
