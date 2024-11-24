@@ -31,12 +31,12 @@
                                    CornerRadius="10"
                                    Padding="10">
                                 <StackLayout>
-                                    <Label Text="{Binding SenderUsername}"
+                                    <Label Text="{Binding Sender.Username}"
                                            FontAttributes="Bold"
                                            TextColor="{StaticResource Primary}"/>
                                     <Label Text="{Binding Content}"
                                            TextColor="{StaticResource Gray900}"/>
-                                    <Label Text="{Binding Timestamp, StringFormat='{0:g}'}"
+                                    <Label Text="{Binding CreatedAt, StringFormat='{0:g}'}"
                                            FontSize="12"
                                            TextColor="{StaticResource Gray500}"
                                            HorizontalOptions="End"/>

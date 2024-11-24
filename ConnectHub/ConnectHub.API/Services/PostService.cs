@@ -217,5 +217,117 @@ namespace ConnectHub.API.Services
                 IsLikedByCurrentUser = comment.LikedBy?.Any(u => u.Id == currentUserId) ?? false
             };
         }
+
+        public async Task LikePostAsync(int postId, int userId)
+        {
+            var post = await _context.Posts
+                .Include(p => p.LikedBy)
+                .FirstOrDefaultAsync(p => p.Id == postId);
+
+            if (post == null)
+                throw new InvalidOperationException("Post not found");
+
+            if (!post.LikedBy.Any(u => u.Id == userId))
+            {
+                var user = await _context.Users.FindAsync(userId);
+                post.LikedBy.Add(user);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task UnlikePostAsync(int postId, int userId)
+        {
+            var post = await _context.Posts
+                .Include(p => p.LikedBy)
+                .FirstOrDefaultAsync(p => p.Id == postId);
+
+            if (post == null)
+                throw new InvalidOperationException("Post not found");
+
+            var user = post.LikedBy.FirstOrDefault(u => u.Id == userId);
+            if (user != null)
+            {
+                post.LikedBy.Remove(user);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task<List<PostDto>> SearchPostsAsync(string query, int userId, int page = 1, int pageSize = 10)
+        {
+            var posts = await _context.Posts
+                .Include(p => p.User)
+                .Include(p => p.Comments)
+                    .ThenInclude(c => c.User)
+                .Include(p => p.LikedBy)
+                .Where(p => p.Content.Contains(query) || p.LocationName.Contains(query))
+                .OrderByDescending(p => p.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return posts.Select(p => new PostDto
+            {
+                Id = p.Id,
+                User = MapToUserDto(p.User),
+                Content = p.Content,
+                ImageUrl = p.ImageUrl,
+                Latitude = p.Latitude,
+                Longitude = p.Longitude,
+                LocationName = p.LocationName,
+                CreatedAt = p.CreatedAt,
+                UpdatedAt = p.UpdatedAt,
+                LikesCount = p.LikedBy.Count,
+                CommentsCount = p.Comments.Count,
+                IsLikedByCurrentUser = p.LikedBy.Any(u => u.Id == userId),
+                Comments = p.Comments
+                    .OrderByDescending(c => c.CreatedAt)
+                    .Take(3)
+                    .Select(c => MapToCommentDto(c, userId))
+                    .ToList()
+            }).ToList();
+        }
+
+        public async Task<List<PostDto>> GetNearbyPostsAsync(double latitude, double longitude, int userId, int page = 1, int pageSize = 10)
+        {
+            const double radius = 10; // 10km radius
+            var posts = await _context.Posts
+                .Include(p => p.User)
+                .Include(p => p.Comments)
+                    .ThenInclude(c => c.User)
+                .Include(p => p.LikedBy)
+                .Where(p => p.Latitude != null && p.Longitude != null)
+                .OrderBy(p => 
+                    Math.Acos(Math.Sin(latitude * Math.PI / 180) * Math.Sin(p.Latitude.Value * Math.PI / 180) +
+                    Math.Cos(latitude * Math.PI / 180) * Math.Cos(p.Latitude.Value * Math.PI / 180) *
+                    Math.Cos((p.Longitude.Value - longitude) * Math.PI / 180)) * 6371)
+                .Where(p => 
+                    Math.Acos(Math.Sin(latitude * Math.PI / 180) * Math.Sin(p.Latitude.Value * Math.PI / 180) +
+                    Math.Cos(latitude * Math.PI / 180) * Math.Cos(p.Latitude.Value * Math.PI / 180) *
+                    Math.Cos((p.Longitude.Value - longitude) * Math.PI / 180)) * 6371 <= radius)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return posts.Select(p => new PostDto
+            {
+                Id = p.Id,
+                User = MapToUserDto(p.User),
+                Content = p.Content,
+                ImageUrl = p.ImageUrl,
+                Latitude = p.Latitude,
+                Longitude = p.Longitude,
+                LocationName = p.LocationName,
+                CreatedAt = p.CreatedAt,
+                UpdatedAt = p.UpdatedAt,
+                LikesCount = p.LikedBy.Count,
+                CommentsCount = p.Comments.Count,
+                IsLikedByCurrentUser = p.LikedBy.Any(u => u.Id == userId),
+                Comments = p.Comments
+                    .OrderByDescending(c => c.CreatedAt)
+                    .Take(3)
+                    .Select(c => MapToCommentDto(c, userId))
+                    .ToList()
+            }).ToList();
+        }
     }
 }

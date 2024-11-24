@@ -11,6 +11,8 @@ namespace ConnectHub.App.Services
         private readonly string _baseUrl;
         private readonly IPreferences _preferences;
 
+        public string Token { get; set; }
+
         public ApiService(IPreferences preferences)
         {
             _preferences = preferences;
@@ -79,57 +81,61 @@ namespace ConnectHub.App.Services
             return await response.Content.ReadFromJsonAsync<Post>();
         }
 
-        public async Task<bool> LikePostAsync(string postId)
+        public async Task<bool> LikePostAsync(int postId)
         {
-            var response = await _httpClient.PostAsync($"/api/post/{postId}/like", null);
+            var response = await _httpClient.PostAsync($"/api/posts/{postId}/like", null);
             return response.IsSuccessStatusCode;
         }
 
-        public async Task<Post> AddCommentAsync(string postId, string content)
+        public async Task<bool> UnlikePostAsync(int postId)
         {
-            var response = await _httpClient.PostAsJsonAsync($"/api/post/{postId}/comment", new { content });
+            var response = await _httpClient.DeleteAsync($"/api/posts/{postId}/like");
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<Post> AddCommentAsync(int postId, string content)
+        {
+            var response = await _httpClient.PostAsJsonAsync($"/api/posts/{postId}/comments", new { content });
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<Post>();
         }
 
-        public async Task<List<Post>> SearchPostsAsync(string query)
+        public async Task<List<ChatMessage>> GetChatHistoryAsync(int userId)
         {
-            var response = await _httpClient.GetAsync($"/api/post/search?query={Uri.EscapeDataString(query)}");
+            var response = await _httpClient.GetAsync($"/api/chat/{userId}/history");
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<List<Post>>();
+            return await response.Content.ReadFromJsonAsync<List<ChatMessage>>();
         }
 
-        public async Task<List<Post>> GetNearbyPostsAsync(double latitude, double longitude)
+        public async Task SendMessageAsync(int receiverId, string content)
         {
-            var response = await _httpClient.GetAsync($"/api/post/nearby?latitude={latitude}&longitude={longitude}");
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<List<Post>>();
-        }
-
-        public async Task<List<PrivateMessage>> GetChatHistoryAsync(string userId)
-        {
-            var response = await _httpClient.GetAsync($"/api/chat/{userId}");
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<List<PrivateMessage>>();
-        }
-
-        public async Task SendMessageAsync(string receiverId, string content)
-        {
-            var response = await _httpClient.PostAsJsonAsync("/api/chat/send", new { receiverId, content });
+            var response = await _httpClient.PostAsJsonAsync($"/api/chat/{receiverId}/send", new { content });
             response.EnsureSuccessStatusCode();
         }
 
-        public async Task<bool> ReportPostAsync(string postId)
+        public async Task<bool> ReportPostAsync(int postId)
         {
-            var response = await _httpClient.PostAsync($"/api/post/{postId}/report", null);
+            var response = await _httpClient.PostAsync($"/api/posts/{postId}/report", null);
             return response.IsSuccessStatusCode;
         }
 
-        public async Task<User> GetUserProfileAsync(string userId)
+        public async Task<User> GetUserProfileAsync(int userId)
         {
-            var response = await _httpClient.GetAsync($"/api/user/{userId}");
+            var response = await _httpClient.GetAsync($"/api/users/{userId}/profile");
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<User>();
+        }
+
+        public async Task<bool> LogoutAsync(int userId)
+        {
+            var response = await _httpClient.PostAsync($"/api/auth/logout/{userId}", null);
+            if (response.IsSuccessStatusCode)
+            {
+                _preferences.Remove("auth_token");
+                _httpClient.DefaultRequestHeaders.Authorization = null;
+                return true;
+            }
+            return false;
         }
 
         public async Task UpdateProfileAsync(string username, Stream? profilePictureStream = null)
@@ -148,16 +154,18 @@ namespace ConnectHub.App.Services
             response.EnsureSuccessStatusCode();
         }
 
-        public async Task<bool> LogoutAsync()
+        public async Task<List<Post>> SearchPostsAsync(string query)
         {
-            var response = await _httpClient.PostAsync("/api/auth/logout", null);
-            if (response.IsSuccessStatusCode)
-            {
-                _preferences.Remove("auth_token");
-                _httpClient.DefaultRequestHeaders.Authorization = null;
-                return true;
-            }
-            return false;
+            var response = await _httpClient.GetAsync($"/api/posts/search?query={Uri.EscapeDataString(query)}");
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<List<Post>>();
+        }
+
+        public async Task<List<Post>> GetNearbyPostsAsync(double latitude, double longitude)
+        {
+            var response = await _httpClient.GetAsync($"/api/posts/nearby?latitude={latitude}&longitude={longitude}");
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<List<Post>>();
         }
 
         private string GetMimeType(string fileName)

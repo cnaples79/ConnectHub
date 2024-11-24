@@ -1,8 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "QlbRWb3zaN28BEGe6hDek+WivvJ/AHVvGPW175s+0LuKjYkc1URu8f4XcGmguNCcYNqwcQAPGYSf6bpsjNcafA==",
+  "dgSpecHash": "ZYEzTmULf7pqv/8ezZfmezYSvysnuExTc77mll9ftZXqm2j8y88Yy0uDRDRo7ml20mVJ16EbW177ZSGL+n6LOw==",
   "success": true,
   "projectFilePath": "/Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.Shared/ConnectHub.Shared.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "/Users/chasenaples/.nuget/packages/microsoft.aspnetcore.http.features/5.0.17/microsoft.aspnetcore.http.features.5.0.17.nupkg.sha512",
+    "/Users/chasenaples/.nuget/packages/microsoft.extensions.primitives/5.0.1/microsoft.extensions.primitives.5.0.1.nupkg.sha512",
+    "/Users/chasenaples/.nuget/packages/system.io.pipelines/5.0.2/system.io.pipelines.5.0.2.nupkg.sha512"
+  ],
   "logs": []
 }

@@ -6,7 +6,8 @@ using ConnectHub.Shared.DTOs;
 using ConnectHub.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using BCrypt.Net.BCrypt;
+using BCrypt.Net;
+using System.Collections.Generic;
 
 namespace ConnectHub.API.Services
 {
@@ -35,10 +36,9 @@ namespace ConnectHub.API.Services
 
             var user = new User
             {
-                Id = Guid.NewGuid().ToString(),
                 Username = registerDto.Username,
                 Email = registerDto.Email,
-                PasswordHash = BC.HashPassword(registerDto.Password),
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password),
                 CreatedAt = DateTime.UtcNow,
                 IsOnline = false
             };
@@ -58,7 +58,7 @@ namespace ConnectHub.API.Services
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Email == loginDto.Email);
 
-            if (user == null || !BC.Verify(loginDto.Password, user.PasswordHash))
+            if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
             {
                 throw new InvalidOperationException("Invalid email or password");
             }
@@ -74,28 +74,39 @@ namespace ConnectHub.API.Services
             };
         }
 
+        public async Task LogoutUserAsync(int userId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user != null)
+            {
+                user.IsOnline = false;
+                user.LastActive = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+            }
+        }
+
         private string GenerateJwtToken(User user)
         {
-            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Secret"] ?? 
-                throw new InvalidOperationException("JWT secret is not configured"));
-
-            var tokenDescriptor = new SecurityTokenDescriptor
+            var claims = new List<Claim>
             {
-                Subject = new ClaimsIdentity(new[]
-                {
-                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim(ClaimTypes.Email, user.Email),
-                    new Claim(ClaimTypes.Name, user.Username)
-                }),
-                Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials = new SigningCredentials(
-                    new SymmetricSecurityKey(key),
-                    SecurityAlgorithms.HmacSha256Signature)
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Name, user.Username)
             };
 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured")));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            var expires = DateTime.Now.AddDays(Convert.ToDouble(_configuration["Jwt:ExpireDays"] ?? "7"));
+
+            var token = new JwtSecurityToken(
+                _configuration["Jwt:Issuer"],
+                _configuration["Jwt:Audience"],
+                claims,
+                expires: expires,
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         private static UserDto MapToUserDto(User user)
@@ -105,23 +116,14 @@ namespace ConnectHub.API.Services
                 Id = user.Id,
                 Username = user.Username,
                 Email = user.Email,
-                Bio = user.Bio,
-                ProfileImageUrl = user.ProfileImageUrl,
-                CreatedAt = user.CreatedAt,
+                Bio = user.Bio ?? "",
+                ProfileImageUrl = user.ProfileImageUrl ?? "",
+                IsOnline = user.IsOnline,
                 LastActive = user.LastActive,
+                CreatedAt = user.CreatedAt,
                 FollowersCount = user.Followers?.Count ?? 0,
                 FollowingCount = user.Following?.Count ?? 0
             };
-        }
-
-        public async Task LogoutUserAsync(string userId)
-        {
-            var user = await _context.Users.FindAsync(userId);
-            if (user != null)
-            {
-                user.IsOnline = false;
-                await _context.SaveChangesAsync();
-            }
         }
     }
 }

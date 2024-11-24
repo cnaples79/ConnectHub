@@ -1,3 +1,5 @@
+using ConnectHub.App.Views;
+
 namespace ConnectHub.App;
 
 public partial class AppShell : Shell

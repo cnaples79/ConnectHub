@@ -10,6 +10,7 @@ namespace ConnectHub.App.ViewModels
         private readonly IApiService _apiService;
         private string _message;
         private bool _isLoading;
+        private int _currentUserId;
 
         public ObservableCollection<ChatMessage> Messages { get; } = new();
         
@@ -25,20 +26,23 @@ namespace ConnectHub.App.ViewModels
             set => SetProperty(ref _isLoading, value);
         }
 
-        public ChatViewModel(IApiService apiService)
+        public ChatViewModel(IApiService apiService, int currentUserId)
         {
             _apiService = apiService;
+            _currentUserId = currentUserId;
             Title = "Chat";
-            LoadMessagesCommand.Execute(null);
+            LoadMessages();
         }
 
         [RelayCommand]
         private async Task LoadMessages()
         {
+            if (IsLoading) return;
+            
+            IsLoading = true;
             try
             {
-                IsLoading = true;
-                var messages = await _apiService.GetChatHistoryAsync();
+                var messages = await _apiService.GetChatHistoryAsync(_currentUserId);
                 Messages.Clear();
                 foreach (var message in messages)
                 {
@@ -47,7 +51,7 @@ namespace ConnectHub.App.ViewModels
             }
             catch (Exception ex)
             {
-                await Application.Current.MainPage.DisplayAlert("Error", ex.Message, "OK");
+                await Application.Current.MainPage.DisplayAlert("Error", "Failed to load chat history", "OK");
             }
             finally
             {
@@ -56,20 +60,20 @@ namespace ConnectHub.App.ViewModels
         }
 
         [RelayCommand]
-        private async Task SendMessage()
+        private async Task SendMessageAsync()
         {
             if (string.IsNullOrWhiteSpace(Message))
                 return;
 
             try
             {
-                var message = await _apiService.SendMessageAsync(Message);
-                Messages.Add(message);
+                await _apiService.SendMessageAsync(_currentUserId, Message);
                 Message = string.Empty;
+                await LoadMessages();
             }
             catch (Exception ex)
             {
-                await Application.Current.MainPage.DisplayAlert("Error", ex.Message, "OK");
+                await Application.Current.MainPage.DisplayAlert("Error", "Failed to send message", "OK");
             }
         }
     }

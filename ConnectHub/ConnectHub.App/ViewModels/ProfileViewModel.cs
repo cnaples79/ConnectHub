@@ -10,6 +10,7 @@ namespace ConnectHub.App.ViewModels
         private readonly INavigationService _navigationService;
         private User _user;
         private bool _isLoading;
+        private int _currentUserId;
 
         public User User
         {
@@ -23,25 +24,27 @@ namespace ConnectHub.App.ViewModels
             set => SetProperty(ref _isLoading, value);
         }
 
-        public ProfileViewModel(IApiService apiService, INavigationService navigationService)
+        public ProfileViewModel(IApiService apiService, INavigationService navigationService, int currentUserId)
         {
             _apiService = apiService;
             _navigationService = navigationService;
+            _currentUserId = currentUserId;
             Title = "Profile";
             LoadProfileCommand.Execute(null);
         }
 
         [RelayCommand]
-        private async Task LoadProfile()
+        private async Task LoadProfileAsync()
         {
             try
             {
                 IsLoading = true;
-                User = await _apiService.GetUserProfileAsync();
+                var user = await _apiService.GetUserProfileAsync(_currentUserId);
+                User = user;
             }
             catch (Exception ex)
             {
-                await Application.Current.MainPage.DisplayAlert("Error", ex.Message, "OK");
+                await Application.Current.MainPage.DisplayAlert("Error", "Failed to load profile", "OK");
             }
             finally
             {
@@ -50,7 +53,7 @@ namespace ConnectHub.App.ViewModels
         }
 
         [RelayCommand]
-        private async Task UpdateProfile()
+        private async Task UpdateProfileAsync()
         {
             if (User == null)
                 return;
@@ -58,12 +61,12 @@ namespace ConnectHub.App.ViewModels
             try
             {
                 IsLoading = true;
-                await _apiService.UpdateProfileAsync(User);
+                await _apiService.UpdateProfileAsync(User.Username);
                 await Application.Current.MainPage.DisplayAlert("Success", "Profile updated successfully", "OK");
             }
             catch (Exception ex)
             {
-                await Application.Current.MainPage.DisplayAlert("Error", ex.Message, "OK");
+                await Application.Current.MainPage.DisplayAlert("Error", "Failed to update profile", "OK");
             }
             finally
             {
@@ -77,7 +80,7 @@ namespace ConnectHub.App.ViewModels
             var logout = await Application.Current.MainPage.DisplayAlert("Logout", "Are you sure you want to logout?", "Yes", "No");
             if (logout)
             {
-                await _apiService.LogoutAsync();
+                await _apiService.LogoutAsync(_currentUserId);
                 await _navigationService.NavigateToAsync("///login");
             }
         }

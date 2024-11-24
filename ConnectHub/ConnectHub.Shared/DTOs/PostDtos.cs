@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace ConnectHub.Shared.DTOs
 {
@@ -7,7 +8,6 @@ namespace ConnectHub.Shared.DTOs
         [Required]
         [StringLength(1000)]
         public string Content { get; set; }
-
         public IFormFile Image { get; set; }
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }

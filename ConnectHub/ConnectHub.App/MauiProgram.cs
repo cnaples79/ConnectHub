@@ -18,6 +18,11 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             });
 
+        builder.ConfigureEssentials(essentials =>
+        {
+            essentials.UseVersionTracking();
+        });
+
         // Register Services
         builder.Services.AddSingleton<IApiService, ApiService>();
         builder.Services.AddSingleton<INavigationService, NavigationService>();
@@ -40,7 +45,7 @@ public static class MauiProgram
         builder.Services.AddTransient<ProfileViewModel>();
 
 #if DEBUG
-        builder.Logging.AddDebug();
+        builder.Logging.AddDebug().SetMinimumLevel(LogLevel.Trace);
 #endif
 
         return builder.Build();

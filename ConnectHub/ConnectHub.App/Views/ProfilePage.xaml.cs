@@ -1,3 +1,5 @@
+using ConnectHub.App.ViewModels;
+
 namespace ConnectHub.App.Views;
 
 public partial class ProfilePage : ContentPage

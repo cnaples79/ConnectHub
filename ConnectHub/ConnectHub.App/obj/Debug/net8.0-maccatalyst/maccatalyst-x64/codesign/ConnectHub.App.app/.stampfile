@@ -1,0 +1,1 @@
+-v --force --timestamp=none --sign - --entitlements /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/obj/Debug/net8.0-maccatalyst/maccatalyst-x64/Entitlements.xcent /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/bin/Debug/net8.0-maccatalyst/maccatalyst-x64/ConnectHub.App.app

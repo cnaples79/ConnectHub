@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using ConnectHub.API.Services;
 using ConnectHub.Shared.DTOs;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace ConnectHub.API.Controllers
 {
@@ -48,27 +49,13 @@ namespace ConnectHub.API.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             
-            if (string.IsNullOrEmpty(userId))
+            if (string.IsNullOrEmpty(userId) || !int.TryParse(userId, out int id))
                 return Unauthorized();
 
-            await _authService.LogoutUserAsync(userId);
+            await _authService.LogoutUserAsync(id);
             return Ok(new { Message = "Logged out successfully" });
         }
-    }
-
-    // DTOs for input validation
-    public class UserRegistrationDto
-    {
-        public string Username { get; set; }
-        public string Email { get; set; }
-        public string Password { get; set; }
-    }
-
-    public class UserLoginDto
-    {
-        public string Email { get; set; }
-        public string Password { get; set; }
     }
 }

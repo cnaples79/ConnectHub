@@ -3,6 +3,7 @@ using System.Windows.Input;
 using ConnectHub.Shared.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ConnectHub.App.Services;
 
 namespace ConnectHub.App.ViewModels
 {
@@ -76,16 +77,26 @@ namespace ConnectHub.App.ViewModels
         }
 
         [RelayCommand]
-        private async Task LikePost(Post post)
+        private async Task LikePostAsync(Post post)
         {
             try
             {
-                await _apiService.LikePostAsync(post.Id);
-                post.LikeCount++;
+                if (post.IsLiked)
+                {
+                    await _apiService.UnlikePostAsync(post.Id);
+                    post.IsLiked = false;
+                    post.LikesCount--;
+                }
+                else
+                {
+                    await _apiService.LikePostAsync(post.Id);
+                    post.IsLiked = true;
+                    post.LikesCount++;
+                }
             }
             catch (Exception ex)
             {
-                await Shell.Current.DisplayAlert("Error", "Failed to like post", "OK");
+                await Shell.Current.DisplayAlert("Error", "Failed to update like status", "OK");
             }
         }
 

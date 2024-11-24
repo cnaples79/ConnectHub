@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using ConnectHub.API.Services;
 using ConnectHub.Shared.DTOs;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 
 namespace ConnectHub.API.Controllers
 {
@@ -57,7 +58,7 @@ namespace ConnectHub.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PostDto>> UpdatePost(int id, UpdatePostDto updatePostDto)
+        public async Task<ActionResult<PostDto>> UpdatePost(int id, [FromForm] UpdatePostDto updatePostDto)
         {
             try
             {
@@ -67,16 +68,16 @@ namespace ConnectHub.API.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                return NotFound(ex.Message);
+                return BadRequest(ex.Message);
             }
-            catch (UnauthorizedAccessException ex)
+            catch (UnauthorizedAccessException)
             {
-                return Forbid(ex.Message);
+                return Forbid();
             }
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePost(int id)
+        public async Task<ActionResult> DeletePost(int id)
         {
             try
             {
@@ -88,9 +89,9 @@ namespace ConnectHub.API.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch (UnauthorizedAccessException ex)
+            catch (UnauthorizedAccessException)
             {
-                return Forbid(ex.Message);
+                return Forbid();
             }
         }
 
@@ -110,36 +111,74 @@ namespace ConnectHub.API.Controllers
             }
         }
 
+        [HttpPost("{postId}/like")]
+        public async Task<ActionResult> LikePost(int postId)
+        {
+            try
+            {
+                var userId = GetUserId();
+                await _postService.LikePostAsync(postId, userId);
+                return Ok();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete("{postId}/like")]
+        public async Task<ActionResult> UnlikePost(int postId)
+        {
+            try
+            {
+                var userId = GetUserId();
+                await _postService.UnlikePostAsync(postId, userId);
+                return Ok();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("search")]
+        public async Task<ActionResult<List<PostDto>>> SearchPosts([FromQuery] string query, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var userId = GetUserId();
+                var posts = await _postService.SearchPostsAsync(query, userId, page, pageSize);
+                return Ok(posts);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("nearby")]
+        public async Task<ActionResult<List<PostDto>>> GetNearbyPosts([FromQuery] double latitude, [FromQuery] double longitude, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            try
+            {
+                var userId = GetUserId();
+                var posts = await _postService.GetNearbyPostsAsync(latitude, longitude, userId, page, pageSize);
+                return Ok(posts);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         private int GetUserId()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
             {
-                throw new UnauthorizedAccessException("User not authenticated");
+                throw new UnauthorizedAccessException("Invalid user ID claim");
             }
             return userId;
         }
-    }
-
-    public class CreatePostDto
-    {
-        public string Content { get; set; }
-        public IFormFile? Image { get; set; }
-        public double? Latitude { get; set; }
-        public double? Longitude { get; set; }
-    }
-
-    public class UpdatePostDto
-    {
-        public string Content { get; set; }
-        public IFormFile? Image { get; set; }
-        public double? Latitude { get; set; }
-        public double? Longitude { get; set; }
-    }
-
-    public class CreateCommentDto
-    {
-        public int PostId { get; set; }
-        public string Content { get; set; }
     }
 }
