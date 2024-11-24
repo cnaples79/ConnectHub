@@ -1,3 +1,4 @@
+using Microsoft.Maui.Controls;
 using ConnectHub.App.Views;
 
 namespace ConnectHub.App;
@@ -12,6 +13,7 @@ public partial class AppShell : Shell
         {
             InitializeComponent();
             RegisterRoutes();
+            System.Diagnostics.Debug.WriteLine("AppShell initialized successfully");
         }
         catch (Exception ex)
         {
@@ -28,6 +30,7 @@ public partial class AppShell : Shell
 
         try
         {
+            System.Diagnostics.Debug.WriteLine("Registering routes...");
             // Register routes for navigation
             Routing.RegisterRoute("login", typeof(LoginPage));
             Routing.RegisterRoute("register", typeof(RegisterPage));
@@ -36,6 +39,7 @@ public partial class AppShell : Shell
             Routing.RegisterRoute("profile", typeof(ProfilePage));
 
             _routesRegistered = true;
+            System.Diagnostics.Debug.WriteLine("Routes registered successfully");
         }
         catch (Exception ex)
         {

@@ -6,9 +6,31 @@
     xmlns:views="clr-namespace:ConnectHub.App.Views"
     Shell.FlyoutBehavior="Disabled">
 
-    <ShellContent
-        Title="Login"
-        ContentTemplate="{DataTemplate views:LoginPage}"
-        Route="login" />
+    <TabBar>
+        <ShellContent
+            Title="Login"
+            ContentTemplate="{DataTemplate views:LoginPage}"
+            Route="login" />
+
+        <ShellContent
+            Title="Register"
+            ContentTemplate="{DataTemplate views:RegisterPage}"
+            Route="register" />
+
+        <ShellContent
+            Title="Feed"
+            ContentTemplate="{DataTemplate views:FeedPage}"
+            Route="feed" />
+
+        <ShellContent
+            Title="Chat"
+            ContentTemplate="{DataTemplate views:ChatPage}"
+            Route="chat" />
+
+        <ShellContent
+            Title="Profile"
+            ContentTemplate="{DataTemplate views:ProfilePage}"
+            Route="profile" />
+    </TabBar>
 
 </Shell>

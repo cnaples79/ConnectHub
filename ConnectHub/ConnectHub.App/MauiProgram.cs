@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using ConnectHub.App.Services;
 using ConnectHub.App.ViewModels;
 using ConnectHub.App.Views;
+using ConnectHub.App.Converters;
 
 namespace ConnectHub.App;
 
@@ -27,6 +28,9 @@ public static class MauiProgram
         builder.Services.AddSingleton<IApiService, ApiService>();
         builder.Services.AddSingleton<INavigationService, NavigationService>();
         builder.Services.AddSingleton<IPreferences>(Preferences.Default);
+
+        // Register converters
+        builder.Services.AddSingleton<BooleanToObjectConverter>();
 
         // Register Views and ViewModels
         builder.Services.AddTransient<LoginPage>();
