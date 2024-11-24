@@ -5,45 +5,69 @@ namespace ConnectHub.API.Data
 {
     public class ConnectHubContext : DbContext
     {
-        public ConnectHubContext(DbContextOptions<ConnectHubContext> options) : base(options) {}
+        public ConnectHubContext(DbContextOptions<ConnectHubContext> options)
+            : base(options)
+        {
+        }
 
         public DbSet<User> Users { get; set; }
         public DbSet<Post> Posts { get; set; }
         public DbSet<Comment> Comments { get; set; }
-        public DbSet<PrivateMessage> PrivateMessages { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
+            // User relationships
             modelBuilder.Entity<User>()
-                .HasIndex(u => u.Email)
-                .IsUnique();
+                .HasMany(u => u.Posts)
+                .WithOne(p => p.User)
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.Comments)
+                .WithOne(c => c.User)
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // User followers/following relationships
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.Followers)
+                .WithMany(u => u.Following)
+                .UsingEntity(j => j.ToTable("UserFollows"));
+
+            // Post relationships
+            modelBuilder.Entity<Post>()
+                .HasMany(p => p.Comments)
+                .WithOne(c => c.Post)
+                .HasForeignKey(c => c.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Post>()
-                .HasOne<User>()
+                .HasMany(p => p.LikedBy)
                 .WithMany()
-                .HasForeignKey(p => p.UserId);
+                .UsingEntity(j => j.ToTable("PostLikes"));
 
+            // Comment relationships
             modelBuilder.Entity<Comment>()
-                .HasOne<User>()
+                .HasMany(c => c.LikedBy)
                 .WithMany()
-                .HasForeignKey(c => c.UserId);
+                .UsingEntity(j => j.ToTable("CommentLikes"));
 
-            modelBuilder.Entity<Comment>()
-                .HasOne<Post>()
-                .WithMany(p => p.Comments)
-                .HasForeignKey(c => c.PostId);
-
-            modelBuilder.Entity<PrivateMessage>()
-                .HasOne<User>()
+            // Chat message relationships
+            modelBuilder.Entity<ChatMessage>()
+                .HasOne(m => m.Sender)
                 .WithMany()
-                .HasForeignKey(pm => pm.SenderId);
+                .HasForeignKey(m => m.SenderId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<PrivateMessage>()
-                .HasOne<User>()
+            modelBuilder.Entity<ChatMessage>()
+                .HasOne(m => m.Receiver)
                 .WithMany()
-                .HasForeignKey(pm => pm.ReceiverId);
+                .HasForeignKey(m => m.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

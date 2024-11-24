@@ -1,98 +1,105 @@
 using Microsoft.AspNetCore.SignalR;
-using ConnectHub.API.Data;
-using ConnectHub.Shared.Models;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using ConnectHub.API.Services;
+using ConnectHub.Shared.DTOs;
+using System.Security.Claims;
 
 namespace ConnectHub.API.Hubs
 {
+    [Authorize]
     public class ChatHub : Hub
     {
-        private readonly ConnectHubContext _context;
+        private readonly ChatService _chatService;
         private static readonly Dictionary<string, string> _userConnections = new();
 
-        public ChatHub(ConnectHubContext context)
+        public ChatHub(ChatService chatService)
         {
-            _context = context;
+            _chatService = chatService;
         }
 
         public override async Task OnConnectedAsync()
         {
-            var userId = Context.User?.FindFirst("sub")?.Value;
+            var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrEmpty(userId))
             {
                 _userConnections[userId] = Context.ConnectionId;
-                await Clients.All.SendAsync("UserOnline", userId);
+                await Groups.AddToGroupAsync(Context.ConnectionId, $"User_{userId}");
             }
             await base.OnConnectedAsync();
         }
 
-        public override async Task OnDisconnectedAsync(Exception? exception)
+        public override async Task OnDisconnectedAsync(Exception exception)
         {
-            var userId = _userConnections.FirstOrDefault(x => x.Value == Context.ConnectionId).Key;
+            var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrEmpty(userId))
             {
                 _userConnections.Remove(userId);
-                await Clients.All.SendAsync("UserOffline", userId);
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"User_{userId}");
             }
             await base.OnDisconnectedAsync(exception);
         }
 
-        public async Task SendPrivateMessage(string receiverId, string content)
+        public async Task SendMessage(SendMessageDto messageDto)
         {
-            var senderId = Context.User?.FindFirst("sub")?.Value;
-            if (string.IsNullOrEmpty(senderId))
+            var senderId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(senderId) || !int.TryParse(senderId, out int senderIdInt))
+            {
                 throw new HubException("User not authenticated");
-
-            var message = new PrivateMessage
-            {
-                Id = Guid.NewGuid().ToString(),
-                SenderId = senderId,
-                ReceiverId = receiverId,
-                Content = content,
-                CreatedAt = DateTime.UtcNow,
-                IsRead = false
-            };
-
-            _context.PrivateMessages.Add(message);
-            await _context.SaveChangesAsync();
-
-            if (_userConnections.TryGetValue(receiverId, out string? connectionId))
-            {
-                await Clients.Client(connectionId).SendAsync("ReceiveMessage", message);
             }
 
-            await Clients.Caller.SendAsync("MessageSent", message);
+            var message = await _chatService.SendMessageAsync(messageDto, senderIdInt);
+
+            // Send to sender's group
+            await Clients.Group($"User_{senderId}").SendAsync("ReceiveMessage", message);
+
+            // Send to receiver's group
+            await Clients.Group($"User_{messageDto.ReceiverId}").SendAsync("ReceiveMessage", message);
         }
 
-        public async Task MarkMessageAsRead(string messageId)
+        public async Task MarkMessagesAsRead(int otherUserId)
         {
-            var userId = Context.User?.FindFirst("sub")?.Value;
-            if (string.IsNullOrEmpty(userId))
-                throw new HubException("User not authenticated");
-
-            var message = await _context.PrivateMessages.FindAsync(messageId);
-            if (message != null && message.ReceiverId == userId)
+            var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId) || !int.TryParse(userId, out int userIdInt))
             {
-                message.IsRead = true;
-                await _context.SaveChangesAsync();
-                
-                if (_userConnections.TryGetValue(message.SenderId, out string? connectionId))
-                {
-                    await Clients.Client(connectionId).SendAsync("MessageRead", messageId);
-                }
+                throw new HubException("User not authenticated");
             }
+
+            await _chatService.MarkMessagesAsReadAsync(userIdInt, otherUserId);
+
+            // Notify the other user that messages have been read
+            await Clients.Group($"User_{otherUserId}").SendAsync("MessagesRead", userIdInt);
         }
 
-        public async Task GetUnreadMessageCount()
+        public async Task JoinChat(int otherUserId)
         {
-            var userId = Context.User?.FindFirst("sub")?.Value;
+            var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
+            {
                 throw new HubException("User not authenticated");
+            }
 
-            var count = await _context.PrivateMessages
-                .CountAsync(m => m.ReceiverId == userId && !m.IsRead);
+            // Add user to a chat-specific group
+            var chatGroup = GetChatGroupName(userId, otherUserId.ToString());
+            await Groups.AddToGroupAsync(Context.ConnectionId, chatGroup);
+        }
 
-            await Clients.Caller.SendAsync("UnreadMessageCount", count);
+        public async Task LeaveChat(int otherUserId)
+        {
+            var userId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new HubException("User not authenticated");
+            }
+
+            // Remove user from chat-specific group
+            var chatGroup = GetChatGroupName(userId, otherUserId.ToString());
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, chatGroup);
+        }
+
+        private static string GetChatGroupName(string user1Id, string user2Id)
+        {
+            var userIds = new[] { user1Id, user2Id }.OrderBy(id => id);
+            return $"Chat_{userIds.First()}_{userIds.Last()}";
         }
     }
 }

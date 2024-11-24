@@ -1,107 +1,123 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using ConnectHub.API.Services;
-using ConnectHub.Shared.Models;
+using ConnectHub.Shared.DTOs;
+using System.Security.Claims;
 
 namespace ConnectHub.API.Controllers
 {
-    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class PostController : ControllerBase
     {
         private readonly PostService _postService;
-        private readonly FileUploadService _fileUploadService;
 
-        public PostController(PostService postService, FileUploadService fileUploadService)
+        public PostController(PostService postService)
         {
             _postService = postService;
-            _fileUploadService = fileUploadService;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<List<PostDto>>> GetFeed([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            var userId = GetUserId();
+            var posts = await _postService.GetFeedAsync(userId, page, pageSize);
+            return Ok(posts);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<PostDto>> GetPost(int id)
+        {
+            try
+            {
+                var userId = GetUserId();
+                var post = await _postService.GetPostDtoAsync(id, userId);
+                return Ok(post);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreatePost([FromForm] CreatePostDto dto)
+        public async Task<ActionResult<PostDto>> CreatePost([FromForm] CreatePostDto createPostDto)
         {
-            var userId = User.FindFirst("sub")?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            string? imageUrl = null;
-            if (dto.Image != null)
+            try
             {
-                var isValid = await _fileUploadService.ValidateFileAsync(dto.Image.OpenReadStream(), dto.Image.ContentType);
-                if (!isValid)
-                    return BadRequest("Invalid file type or size");
-
-                imageUrl = await _fileUploadService.UploadFileAsync(
-                    dto.Image.OpenReadStream(),
-                    dto.Image.FileName,
-                    dto.Image.ContentType
-                );
+                var userId = GetUserId();
+                var post = await _postService.CreatePostAsync(createPostDto, userId);
+                return CreatedAtAction(nameof(GetPost), new { id = post.Id }, post);
             }
-
-            var post = await _postService.CreatePostAsync(
-                userId,
-                dto.Content,
-                imageUrl,
-                dto.Latitude,
-                dto.Longitude
-            );
-
-            return Ok(post);
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
-        [HttpGet("feed")]
-        public async Task<IActionResult> GetFeed([FromQuery] int skip = 0, [FromQuery] int take = 20)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<PostDto>> UpdatePost(int id, UpdatePostDto updatePostDto)
         {
-            var userId = User.FindFirst("sub")?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            var posts = await _postService.GetFeedAsync(userId, skip, take);
-            return Ok(posts);
+            try
+            {
+                var userId = GetUserId();
+                var post = await _postService.UpdatePostAsync(id, updatePostDto, userId);
+                return Ok(post);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
+            }
         }
 
-        [HttpPost("{postId}/comment")]
-        public async Task<IActionResult> AddComment(string postId, [FromBody] AddCommentDto dto)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeletePost(int id)
         {
-            var userId = User.FindFirst("sub")?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            var post = await _postService.AddCommentAsync(postId, userId, dto.Content);
-            if (post == null)
-                return NotFound();
-
-            return Ok(post);
+            try
+            {
+                var userId = GetUserId();
+                await _postService.DeletePostAsync(id, userId);
+                return NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
+            }
         }
 
-        [HttpPost("{postId}/like")]
-        public async Task<IActionResult> LikePost(string postId)
+        [HttpPost("{postId}/comments")]
+        public async Task<ActionResult<CommentDto>> AddComment(int postId, [FromBody] CreateCommentDto createCommentDto)
         {
-            var userId = User.FindFirst("sub")?.Value;
-            if (string.IsNullOrEmpty(userId))
-                return Unauthorized();
-
-            var success = await _postService.LikePostAsync(postId, userId);
-            if (!success)
-                return NotFound();
-
-            return Ok();
+            try
+            {
+                var userId = GetUserId();
+                createCommentDto.PostId = postId;
+                var comment = await _postService.AddCommentAsync(createCommentDto, userId);
+                return Ok(comment);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
-        [HttpGet("nearby")]
-        public async Task<IActionResult> GetNearbyPosts([FromQuery] double latitude, [FromQuery] double longitude)
+        private int GetUserId()
         {
-            var posts = await _postService.GetNearbyPostsAsync(latitude, longitude);
-            return Ok(posts);
-        }
-
-        [HttpGet("search")]
-        public async Task<IActionResult> SearchPosts([FromQuery] string query)
-        {
-            var posts = await _postService.SearchPostsAsync(query);
-            return Ok(posts);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
+            {
+                throw new UnauthorizedAccessException("User not authenticated");
+            }
+            return userId;
         }
     }
 
@@ -113,8 +129,17 @@ namespace ConnectHub.API.Controllers
         public double? Longitude { get; set; }
     }
 
-    public class AddCommentDto
+    public class UpdatePostDto
     {
+        public string Content { get; set; }
+        public IFormFile? Image { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
+    }
+
+    public class CreateCommentDto
+    {
+        public int PostId { get; set; }
         public string Content { get; set; }
     }
 }

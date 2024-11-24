@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ConnectHub.App.Views.ChatPage"
+             xmlns:viewmodel="clr-namespace:ConnectHub.App.ViewModels"
+             xmlns:model="clr-namespace:ConnectHub.Shared.Models;assembly=ConnectHub.Shared"
+             x:DataType="viewmodel:ChatViewModel">
+
+    <Grid RowDefinitions="*,Auto"
+          Padding="10">
+        
+        <RefreshView Grid.Row="0"
+                     Command="{Binding LoadMessagesCommand}"
+                     IsRefreshing="{Binding IsLoading}">
+            
+            <CollectionView ItemsSource="{Binding Messages}"
+                          ItemsLayout="VerticalList">
+                <CollectionView.EmptyView>
+                    <StackLayout HorizontalOptions="Center"
+                               VerticalOptions="Center">
+                        <Label Text="No messages yet"
+                               TextColor="{StaticResource Gray500}"
+                               FontSize="16"/>
+                    </StackLayout>
+                </CollectionView.EmptyView>
+                
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="model:ChatMessage">
+                        <Grid Padding="10">
+                            <Frame BorderColor="{StaticResource Gray200}"
+                                   CornerRadius="10"
+                                   Padding="10">
+                                <StackLayout>
+                                    <Label Text="{Binding SenderUsername}"
+                                           FontAttributes="Bold"
+                                           TextColor="{StaticResource Primary}"/>
+                                    <Label Text="{Binding Content}"
+                                           TextColor="{StaticResource Gray900}"/>
+                                    <Label Text="{Binding Timestamp, StringFormat='{0:g}'}"
+                                           FontSize="12"
+                                           TextColor="{StaticResource Gray500}"
+                                           HorizontalOptions="End"/>
+                                </StackLayout>
+                            </Frame>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <Grid Grid.Row="1"
+              ColumnDefinitions="*,Auto"
+              Padding="5">
+            
+            <Entry Grid.Column="0"
+                   Text="{Binding Message}"
+                   Placeholder="Type a message..."
+                   ReturnType="Send"
+                   ReturnCommand="{Binding SendMessageCommand}"/>
+            
+            <Button Grid.Column="1"
+                    Text="Send"
+                    Command="{Binding SendMessageCommand}"
+                    Style="{StaticResource PrimaryButton}"/>
+        </Grid>
+    </Grid>
+</ContentPage>

@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using ConnectHub.API.Services;
-using ConnectHub.Shared.Models;
+using ConnectHub.Shared.DTOs;
 using Microsoft.AspNetCore.Authorization;
 
 namespace ConnectHub.API.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
         private readonly AuthService _authService;
@@ -17,32 +17,31 @@ namespace ConnectHub.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] UserRegistrationDto registrationDto)
+        public async Task<ActionResult<AuthResponseDto>> Register(RegisterDto registerDto)
         {
-            var user = await _authService.RegisterUserAsync(
-                registrationDto.Username, 
-                registrationDto.Email, 
-                registrationDto.Password
-            );
-
-            if (user == null)
-                return BadRequest("Email already exists");
-
-            return Ok(new { Message = "Registration successful" });
+            try
+            {
+                var response = await _authService.RegisterAsync(registerDto);
+                return Ok(response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] UserLoginDto loginDto)
+        public async Task<ActionResult<AuthResponseDto>> Login(LoginDto loginDto)
         {
-            var token = await _authService.AuthenticateUserAsync(
-                loginDto.Email, 
-                loginDto.Password
-            );
-
-            if (token == null)
-                return Unauthorized("Invalid email or password");
-
-            return Ok(new { Token = token });
+            try
+            {
+                var response = await _authService.LoginAsync(loginDto);
+                return Ok(response);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [Authorize]

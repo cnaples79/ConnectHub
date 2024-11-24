@@ -1,40 +1,44 @@
-using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
+using System;
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
 
 namespace ConnectHub.API.Services
 {
     public class FileUploadService
     {
-        private readonly BlobServiceClient _blobServiceClient;
-        private readonly string _containerName;
+        private readonly string _uploadDirectory;
+        private readonly IWebHostEnvironment _environment;
 
-        public FileUploadService(IConfiguration configuration)
+        public FileUploadService(IWebHostEnvironment environment)
         {
-            _blobServiceClient = new BlobServiceClient(configuration["AzureStorage:ConnectionString"]);
-            _containerName = configuration["AzureStorage:ContainerName"];
+            _environment = environment;
+            _uploadDirectory = Path.Combine(_environment.ContentRootPath, "uploads");
+            Directory.CreateDirectory(_uploadDirectory);
         }
 
         public async Task<string> UploadFileAsync(Stream fileStream, string fileName, string contentType)
         {
-            var container = _blobServiceClient.GetBlobContainerClient(_containerName);
-            await container.CreateIfNotExistsAsync(PublicAccessType.Blob);
-
             var uniqueFileName = $"{Guid.NewGuid()}-{fileName}";
-            var blobClient = container.GetBlobClient(uniqueFileName);
+            var filePath = Path.Combine(_uploadDirectory, uniqueFileName);
 
-            await blobClient.UploadAsync(fileStream, new BlobHttpHeaders { ContentType = contentType });
+            using (var fileWriter = new FileStream(filePath, FileMode.Create))
+            {
+                await fileStream.CopyToAsync(fileWriter);
+            }
 
-            return blobClient.Uri.ToString();
+            // Return a URL that can be accessed through the API
+            return $"/api/files/{uniqueFileName}";
         }
 
         public async Task DeleteFileAsync(string fileUrl)
         {
-            var container = _blobServiceClient.GetBlobContainerClient(_containerName);
-            var uri = new Uri(fileUrl);
-            var blobName = uri.Segments.Last();
-            var blobClient = container.GetBlobClient(blobName);
-
-            await blobClient.DeleteIfExistsAsync();
+            var fileName = Path.GetFileName(new Uri(fileUrl).LocalPath);
+            var filePath = Path.Combine(_uploadDirectory, fileName);
+            
+            if (File.Exists(filePath))
+            {
+                await Task.Run(() => File.Delete(filePath));
+            }
         }
 
         public async Task<bool> ValidateFileAsync(Stream fileStream, string contentType, long maxSizeInBytes = 5242880)

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ConnectHub.App.Views.ProfilePage"
+             xmlns:viewmodel="clr-namespace:ConnectHub.App.ViewModels"
+             x:DataType="viewmodel:ProfileViewModel">
+
+    <ScrollView>
+        <Grid RowDefinitions="Auto,Auto,*"
+              Padding="20">
+
+            <ActivityIndicator Grid.RowSpan="3"
+                             IsRunning="{Binding IsLoading}"
+                             IsVisible="{Binding IsLoading}"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center"/>
+
+            <VerticalStackLayout Grid.Row="0"
+                               Spacing="10"
+                               IsVisible="{Binding User, Converter={StaticResource NotNullConverter}}">
+                
+                <Image Source="{Binding User.ProfileImageUrl}"
+                       HeightRequest="120"
+                       WidthRequest="120"
+                       Aspect="AspectFill"
+                       HorizontalOptions="Center">
+                    <Image.Clip>
+                        <EllipseGeometry Center="60,60"
+                                        RadiusX="60"
+                                        RadiusY="60"/>
+                    </Image.Clip>
+                </Image>
+
+                <Label Text="{Binding User.Username}"
+                       FontSize="24"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"/>
+
+                <Label Text="{Binding User.Email}"
+                       TextColor="{StaticResource Gray500}"
+                       HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Grid.Row="1"
+                               Spacing="20"
+                               Margin="0,20"
+                               IsVisible="{Binding User, Converter={StaticResource NotNullConverter}}">
+                
+                <Entry Placeholder="Username"
+                       Text="{Binding User.Username}"/>
+
+                <Entry Placeholder="Bio"
+                       Text="{Binding User.Bio}"/>
+
+                <Button Text="Update Profile"
+                        Command="{Binding UpdateProfileCommand}"
+                        Style="{StaticResource PrimaryButton}"/>
+            </VerticalStackLayout>
+
+            <Button Grid.Row="2"
+                    Text="Logout"
+                    Command="{Binding LogoutCommand}"
+                    Style="{StaticResource SecondaryButton}"
+                    VerticalOptions="End"/>
+
+        </Grid>
+    </ScrollView>
+</ContentPage>
