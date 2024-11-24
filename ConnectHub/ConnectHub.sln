@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectHub.App", "ConnectHub.App\ConnectHub.App.csproj", "{6840DB01-DA8E-4B8F-9DFE-DF1A4F20B091}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectHub.API", "ConnectHub.API\ConnectHub.API.csproj", "{679465AB-382F-4D78-9663-853231026906}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectHub.Shared", "ConnectHub.Shared\ConnectHub.Shared.csproj", "{7B5C65C6-5A47-4B43-943B-A31CD4A4CE3D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6840DB01-DA8E-4B8F-9DFE-DF1A4F20B091}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6840DB01-DA8E-4B8F-9DFE-DF1A4F20B091}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6840DB01-DA8E-4B8F-9DFE-DF1A4F20B091}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6840DB01-DA8E-4B8F-9DFE-DF1A4F20B091}.Release|Any CPU.Build.0 = Release|Any CPU
+		{679465AB-382F-4D78-9663-853231026906}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{679465AB-382F-4D78-9663-853231026906}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{679465AB-382F-4D78-9663-853231026906}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{679465AB-382F-4D78-9663-853231026906}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B5C65C6-5A47-4B43-943B-A31CD4A4CE3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B5C65C6-5A47-4B43-943B-A31CD4A4CE3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B5C65C6-5A47-4B43-943B-A31CD4A4CE3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B5C65C6-5A47-4B43-943B-A31CD4A4CE3D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

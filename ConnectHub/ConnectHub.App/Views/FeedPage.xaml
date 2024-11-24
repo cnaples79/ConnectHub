@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ConnectHub.App.Views.FeedPage"
+             BackgroundColor="#121212"
+             Title="Feed">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Top Bar -->
+        <Grid Grid.Row="0" 
+              BackgroundColor="#1E1E1E"
+              Padding="15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Image Grid.Column="0"
+                   Source="profile_icon.png"
+                   HeightRequest="30"
+                   WidthRequest="30">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenProfileCommand}"/>
+                </Image.GestureRecognizers>
+            </Image>
+
+            <Label Grid.Column="1"
+                   Text="ConnectHub"
+                   TextColor="#2196F3"
+                   FontSize="20"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"/>
+
+            <Image Grid.Column="2"
+                   Source="chat_icon.png"
+                   HeightRequest="30"
+                   WidthRequest="30">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding OpenChatCommand}"/>
+                </Image.GestureRecognizers>
+            </Image>
+        </Grid>
+
+        <!-- Feed Content -->
+        <RefreshView Grid.Row="1" 
+                     Command="{Binding RefreshCommand}"
+                     IsRefreshing="{Binding IsRefreshing}">
+            <CollectionView ItemsSource="{Binding Posts}"
+                          RemainingItemsThreshold="2"
+                          RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border Margin="10,5"
+                                BackgroundColor="#1E1E1E"
+                                StrokeShape="RoundRectangle 10"
+                                Padding="10">
+                            <Grid RowDefinitions="Auto,Auto,Auto,Auto">
+                                <!-- User Info -->
+                                <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
+                                    <Image Grid.Column="0"
+                                           Source="{Binding UserProfilePicture}"
+                                           HeightRequest="40"
+                                           WidthRequest="40"
+                                           Aspect="AspectFill"/>
+                                    <VerticalStackLayout Grid.Column="1" Margin="10,0">
+                                        <Label Text="{Binding Username}"
+                                               TextColor="White"
+                                               FontAttributes="Bold"/>
+                                        <Label Text="{Binding TimeAgo}"
+                                               TextColor="#808080"
+                                               FontSize="12"/>
+                                    </VerticalStackLayout>
+                                    <Button Grid.Column="2"
+                                            Text="..."
+                                            BackgroundColor="Transparent"
+                                            TextColor="#2196F3"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:FeedViewModel}}, Path=ShowPostOptionsCommand}"
+                                            CommandParameter="{Binding}"/>
+                                </Grid>
+
+                                <!-- Post Content -->
+                                <Label Grid.Row="1"
+                                       Text="{Binding Content}"
+                                       TextColor="White"
+                                       Margin="0,10"/>
+
+                                <!-- Post Image -->
+                                <Image Grid.Row="2"
+                                       Source="{Binding ImageUrl}"
+                                       Aspect="AspectFill"
+                                       HeightRequest="200"
+                                       IsVisible="{Binding HasImage}"/>
+
+                                <!-- Interaction Bar -->
+                                <Grid Grid.Row="3" 
+                                      ColumnDefinitions="Auto,Auto,*"
+                                      Margin="0,10,0,0">
+                                    <Button Grid.Column="0"
+                                            Text="{Binding LikeCount, StringFormat='{0} Likes'}"
+                                            BackgroundColor="Transparent"
+                                            TextColor="#2196F3"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:FeedViewModel}}, Path=LikePostCommand}"
+                                            CommandParameter="{Binding}"/>
+                                    <Button Grid.Column="1"
+                                            Text="{Binding CommentCount, StringFormat='{0} Comments'}"
+                                            BackgroundColor="Transparent"
+                                            TextColor="#2196F3"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:FeedViewModel}}, Path=ShowCommentsCommand}"
+                                            CommandParameter="{Binding}"/>
+                                    <Button Grid.Column="2"
+                                            Text="Share"
+                                            BackgroundColor="Transparent"
+                                            TextColor="#2196F3"
+                                            HorizontalOptions="End"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:FeedViewModel}}, Path=SharePostCommand}"
+                                            CommandParameter="{Binding}"/>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <!-- New Post Button -->
+        <Button Grid.Row="2"
+                Text="New Post"
+                BackgroundColor="#2196F3"
+                TextColor="White"
+                Margin="20,10"
+                CornerRadius="25"
+                HeightRequest="50"
+                Command="{Binding CreatePostCommand}"/>
+    </Grid>
+</ContentPage>

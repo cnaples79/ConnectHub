@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ConnectHub.App.MainPage"
+             BackgroundColor="#121212">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <Border Grid.Row="0" 
+                BackgroundColor="#1E1E1E" 
+                Stroke="#2196F3"
+                StrokeThickness="2"
+                Padding="15">
+            <Label Text="ConnectHub" 
+                   FontSize="24" 
+                   TextColor="#FFFFFF" 
+                   HorizontalOptions="Center"
+                   FontAttributes="Bold"/>
+        </Border>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="15" Padding="20">
+                <!-- Login/Register Buttons -->
+                <Button Text="Login" 
+                        BackgroundColor="#2196F3" 
+                        TextColor="White"
+                        Clicked="OnLoginClicked"
+                        CornerRadius="10"/>
+                
+                <Button Text="Register" 
+                        BackgroundColor="#1976D2" 
+                        TextColor="White"
+                        Clicked="OnRegisterClicked"
+                        CornerRadius="10"/>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Border Grid.Row="2" 
+                BackgroundColor="#1E1E1E" 
+                Stroke="#2196F3"
+                StrokeThickness="2"
+                Padding="15">
+            <Label Text="Connect. Share. Explore." 
+                   TextColor="#FFFFFF" 
+                   HorizontalOptions="Center"
+                   FontSize="14"/>
+        </Border>
+    </Grid>
+</ContentPage>
