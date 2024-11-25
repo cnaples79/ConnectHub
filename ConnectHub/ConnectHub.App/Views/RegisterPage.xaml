@@ -3,8 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="ConnectHub.App.Views.RegisterPage"
              xmlns:viewmodel="clr-namespace:ConnectHub.App.ViewModels"
+             xmlns:converters="clr-namespace:ConnectHub.App.Converters"
              x:DataType="viewmodel:RegisterViewModel"
              Shell.NavBarIsVisible="False">
+
+    <ContentPage.Resources>
+        <converters:BooleanToObjectConverter x:Key="InverseBoolConverter" />
+    </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto,*"
           Padding="20">

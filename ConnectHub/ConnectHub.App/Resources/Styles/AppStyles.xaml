@@ -18,12 +18,6 @@
     <Color x:Key="Gray900">#212121</Color>
     <Color x:Key="Gray950">#141414</Color>
     
-    <!-- Converters -->
-    <converters:BooleanToObjectConverter x:Key="InverseBoolConverter">
-        <converters:BooleanToObjectConverter.TrueObject>False</converters:BooleanToObjectConverter.TrueObject>
-        <converters:BooleanToObjectConverter.FalseObject>True</converters:BooleanToObjectConverter.FalseObject>
-    </converters:BooleanToObjectConverter>
-
     <!-- Button Styles -->
     <Style x:Key="BaseButton" TargetType="Button">
         <Setter Property="FontFamily" Value="OpenSansRegular"/>
