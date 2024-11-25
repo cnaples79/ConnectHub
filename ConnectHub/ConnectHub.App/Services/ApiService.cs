@@ -35,20 +35,61 @@ namespace ConnectHub.App.Services
 
         public async Task<string> LoginAsync(string email, string password)
         {
-            var response = await _httpClient.PostAsJsonAsync("/api/auth/login", new { email, password });
-            response.EnsureSuccessStatusCode();
-            
-            var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
-            _preferences.Set("auth_token", result.Token);
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.Token);
-            
-            return result.Token;
+            try
+            {
+                var loginData = new { Email = email, Password = password };
+                var response = await _httpClient.PostAsJsonAsync("/api/auth/login", loginData);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new HttpRequestException($"Login failed: {errorContent}");
+                }
+                
+                var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+                if (result?.Token == null)
+                {
+                    throw new HttpRequestException("Invalid response from server");
+                }
+                
+                _preferences.Set("auth_token", result.Token);
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.Token);
+                
+                return result.Token;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Login error: {ex}");
+                throw;
+            }
         }
 
-        public async Task<bool> RegisterAsync(string username, string email, string password)
+        public async Task<bool> RegisterAsync(string username, string email, string password, string confirmPassword)
         {
-            var response = await _httpClient.PostAsJsonAsync("/api/auth/register", new { username, email, password });
-            return response.IsSuccessStatusCode;
+            try
+            {
+                var registerData = new { 
+                    Username = username, 
+                    Email = email, 
+                    Password = password,
+                    ConfirmPassword = confirmPassword
+                };
+                
+                var response = await _httpClient.PostAsJsonAsync("/api/auth/register", registerData);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new HttpRequestException($"Registration failed: {errorContent}");
+                }
+                
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Registration error: {ex}");
+                throw;
+            }
         }
 
         public async Task<List<Post>> GetFeedAsync(int skip, int take)

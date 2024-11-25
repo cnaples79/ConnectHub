@@ -50,14 +50,20 @@ namespace ConnectHub.App.ViewModels
             {
                 IsLoading = true;
                 var token = await _apiService.LoginAsync(Email, Password);
+                
                 if (!string.IsNullOrEmpty(token))
                 {
-                    await _navigationService.NavigateToAsync("///feed");
+                    // Get the AppShell instance and show main tabs
+                    if (Application.Current?.MainPage is AppShell appShell)
+                    {
+                        appShell.ShowMainTabs();
+                    }
                 }
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                await Application.Current.MainPage.DisplayAlert("Error", ex.Message, "OK");
+                await Application.Current.MainPage.DisplayAlert("Error", "Login failed. Please check your credentials and try again.", "OK");
+                System.Diagnostics.Debug.WriteLine($"Login error: {ex}");
             }
             finally
             {
@@ -66,9 +72,9 @@ namespace ConnectHub.App.ViewModels
         }
 
         [RelayCommand]
-        private async Task NavigateToRegister()
+        private async Task NavigateToRegisterAsync()
         {
-            await _navigationService.NavigateToAsync("register");
+            await _navigationService.NavigateToAsync("//register");
         }
     }
 }

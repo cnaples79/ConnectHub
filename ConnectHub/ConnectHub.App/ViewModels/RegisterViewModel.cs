@@ -54,8 +54,10 @@ namespace ConnectHub.App.ViewModels
         [RelayCommand]
         private async Task RegisterAsync()
         {
-            if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Email) || 
-                string.IsNullOrWhiteSpace(Password) || string.IsNullOrWhiteSpace(ConfirmPassword))
+            if (string.IsNullOrWhiteSpace(Username) || 
+                string.IsNullOrWhiteSpace(Email) || 
+                string.IsNullOrWhiteSpace(Password) ||
+                string.IsNullOrWhiteSpace(ConfirmPassword))
             {
                 await Application.Current.MainPage.DisplayAlert("Error", "Please fill in all fields", "OK");
                 return;
@@ -70,16 +72,18 @@ namespace ConnectHub.App.ViewModels
             try
             {
                 IsLoading = true;
-                var success = await _apiService.RegisterAsync(Username, Email, Password);
+                var success = await _apiService.RegisterAsync(Username, Email, Password, ConfirmPassword);
+                
                 if (success)
                 {
                     await Application.Current.MainPage.DisplayAlert("Success", "Account created successfully! Please login.", "OK");
-                    await _navigationService.NavigateToAsync("///login");
+                    await _navigationService.NavigateToAsync("//login");
                 }
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
                 await Application.Current.MainPage.DisplayAlert("Error", ex.Message, "OK");
+                System.Diagnostics.Debug.WriteLine($"Registration error: {ex}");
             }
             finally
             {
@@ -88,9 +92,9 @@ namespace ConnectHub.App.ViewModels
         }
 
         [RelayCommand]
-        private async Task NavigateToLogin()
+        private async Task NavigateToLoginAsync()
         {
-            await _navigationService.NavigateToAsync("///login");
+            await _navigationService.NavigateToAsync("//login");
         }
     }
 }

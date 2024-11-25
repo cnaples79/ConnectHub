@@ -5,7 +5,7 @@ namespace ConnectHub.App.Services
     public interface IApiService
     {
         Task<string> LoginAsync(string email, string password);
-        Task<bool> RegisterAsync(string username, string email, string password);
+        Task<bool> RegisterAsync(string username, string email, string password, string confirmPassword);
         Task<bool> LogoutAsync(int userId);
         Task<List<Post>> GetFeedAsync(int skip, int take);
         Task<Post> CreatePostAsync(string content, Stream? imageStream = null, string? fileName = null, double? latitude = null, double? longitude = null);
