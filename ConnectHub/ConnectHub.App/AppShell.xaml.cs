@@ -1,130 +1,130 @@
 using Microsoft.Maui.Controls;
 using ConnectHub.App.Views;
+using Microsoft.Maui.Dispatching;
+using System.Diagnostics;
+using System;
 
-namespace ConnectHub.App;
-
-public partial class AppShell : Shell
+namespace ConnectHub.App
 {
-    private bool _routesRegistered;
-    private readonly IPreferences _preferences;
-
-    public AppShell()
+    public partial class AppShell : Shell
     {
-        try
+        private readonly IPreferences _preferences;
+
+        public AppShell()
         {
-            InitializeComponent();
-            _preferences = Preferences.Default;
-            RegisterRoutes();
-            
-            // Delay the authentication check until the page is fully loaded
-            Dispatcher.Dispatch(() => 
+            try
             {
-                CheckAuthenticationState();
-            });
-            
-            System.Diagnostics.Debug.WriteLine("AppShell initialized successfully");
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"AppShell initialization error: {ex}");
+                InitializeComponent();
+                _preferences = Preferences.Default;
+                RegisterRoutes();
+                
+                // Delay the authentication check until the page is fully loaded
+                Dispatcher.Dispatch(() => 
+                {
+                    CheckAuthenticationState();
+                });
+                
+                Debug.WriteLine("AppShell initialized successfully");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"AppShell initialization error: {ex}");
 #if DEBUG
-            throw;
+                throw;
 #endif
+            }
         }
-    }
 
-    private void RegisterRoutes()
-    {
-        if (_routesRegistered) return;
-
-        try
+        private void RegisterRoutes()
         {
-            System.Diagnostics.Debug.WriteLine("Registering routes...");
-            // Register routes for navigation
-            Routing.RegisterRoute("login", typeof(LoginPage));
-            Routing.RegisterRoute("register", typeof(RegisterPage));
-            Routing.RegisterRoute("feed", typeof(FeedPage));
-            Routing.RegisterRoute("chat", typeof(ChatPage));
-            Routing.RegisterRoute("profile", typeof(ProfilePage));
+            try
+            {
+                Debug.WriteLine("Registering routes...");
+                // Register routes for navigation
+                Routing.RegisterRoute("login", typeof(LoginPage));
+                Routing.RegisterRoute("register", typeof(RegisterPage));
+                Routing.RegisterRoute("feed", typeof(FeedPage));
+                Routing.RegisterRoute("chat", typeof(ChatPage));
+                Routing.RegisterRoute("profile", typeof(ProfilePage));
 
-            _routesRegistered = true;
-            System.Diagnostics.Debug.WriteLine("Routes registered successfully");
+                Debug.WriteLine("Routes registered successfully");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Route registration error: {ex}");
+#if DEBUG
+                throw;
+#endif
+            }
         }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Route registration error: {ex}");
-            throw;
-        }
-    }
 
-    public void ShowAuthenticationTabs()
-    {
-        try
+        public void ShowAuthenticationTabs()
         {
-            if (MainTabs != null)
+            try
+            {
                 MainTabs.IsVisible = false;
-            
-            if (AuthenticationTabs != null)
-            {
                 AuthenticationTabs.IsVisible = true;
-                Current?.GoToAsync("//login");
+                
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    await Current.GoToAsync("//login");
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"ShowAuthenticationTabs error: {ex}");
             }
         }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"ShowAuthenticationTabs error: {ex}");
-        }
-    }
 
-    public void ShowMainTabs()
-    {
-        try
+        public void ShowMainTabs()
         {
-            if (AuthenticationTabs != null)
+            try
+            {
                 AuthenticationTabs.IsVisible = false;
-            
-            if (MainTabs != null)
-            {
                 MainTabs.IsVisible = true;
-                Current?.GoToAsync("//feed");
+                
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    await Current.GoToAsync("//feed");
+                });
             }
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"ShowMainTabs error: {ex}");
-        }
-    }
-
-    private void CheckAuthenticationState()
-    {
-        try
-        {
-            var token = _preferences?.Get("auth_token", string.Empty);
-            if (string.IsNullOrEmpty(token))
+            catch (Exception ex)
             {
-                ShowAuthenticationTabs();
-            }
-            else
-            {
-                ShowMainTabs();
+                Debug.WriteLine($"ShowMainTabs error: {ex}");
             }
         }
-        catch (Exception ex)
+
+        private void CheckAuthenticationState()
         {
-            System.Diagnostics.Debug.WriteLine($"CheckAuthenticationState error: {ex}");
-            ShowAuthenticationTabs(); // Default to authentication tabs on error
+            try
+            {
+                var token = _preferences?.Get("auth_token", string.Empty);
+                if (string.IsNullOrEmpty(token))
+                {
+                    ShowAuthenticationTabs();
+                }
+                else
+                {
+                    ShowMainTabs();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"CheckAuthenticationState error: {ex}");
+                ShowAuthenticationTabs(); // Default to authentication tabs on error
+            }
         }
-    }
 
-    protected override void OnNavigating(ShellNavigatingEventArgs args)
-    {
-        base.OnNavigating(args);
-        System.Diagnostics.Debug.WriteLine($"Navigating to: {args.Target?.Location?.OriginalString ?? "unknown"}");
-    }
+        protected override void OnNavigating(ShellNavigatingEventArgs args)
+        {
+            base.OnNavigating(args);
+            Debug.WriteLine($"Navigating to: {args.Target?.Location?.OriginalString ?? "unknown"}");
+        }
 
-    protected override void OnNavigated(ShellNavigatedEventArgs args)
-    {
-        base.OnNavigated(args);
-        System.Diagnostics.Debug.WriteLine($"Navigated to: {args.Current?.Location?.OriginalString ?? "unknown"}");
+        protected override void OnNavigated(ShellNavigatedEventArgs args)
+        {
+            base.OnNavigated(args);
+            Debug.WriteLine($"Navigated to: {args.Current?.Location?.OriginalString ?? "unknown"}");
+        }
     }
 }

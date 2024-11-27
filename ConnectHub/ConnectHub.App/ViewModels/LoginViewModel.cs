@@ -9,21 +9,20 @@ namespace ConnectHub.App.ViewModels
         private readonly INavigationService _navigationService;
 
         private string _email;
-        private string _password;
-        private bool _isLoading;
-
         public string Email
         {
             get => _email;
             set => SetProperty(ref _email, value);
         }
 
+        private string _password;
         public string Password
         {
             get => _password;
             set => SetProperty(ref _password, value);
         }
 
+        private bool _isLoading;
         public bool IsLoading
         {
             get => _isLoading;
@@ -53,15 +52,16 @@ namespace ConnectHub.App.ViewModels
                 
                 if (!string.IsNullOrEmpty(token))
                 {
-                    // Store the token in preferences
-                    Preferences.Default.Set("AuthToken", token);
+                    // Store the token in preferences with consistent key
+                    Preferences.Default.Set("auth_token", token);
 
                     // Get the AppShell instance and show main tabs
                     if (Application.Current?.MainPage is AppShell appShell)
                     {
-                        await MainThread.InvokeOnMainThreadAsync(() =>
+                        await MainThread.InvokeOnMainThreadAsync(async () =>
                         {
                             appShell.ShowMainTabs();
+                            await Shell.Current.GoToAsync("//feed");
                         });
                     }
                 }
