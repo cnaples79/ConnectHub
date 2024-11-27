@@ -1,167 +1,169 @@
 using System.Collections.ObjectModel;
-using System.Windows.Input;
 using ConnectHub.Shared.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ConnectHub.App.Services;
 
-namespace ConnectHub.App.ViewModels
+namespace ConnectHub.App.ViewModels;
+
+public partial class FeedViewModel : BaseViewModel
 {
-    public partial class FeedViewModel : ObservableObject
+    private readonly IApiService _apiService;
+    private readonly INavigationService _navigationService;
+    private int _currentPage = 0;
+    private const int PageSize = 20;
+
+    private bool _isRefreshing;
+    public bool IsRefreshing
     {
-        private readonly IApiService _apiService;
-        private readonly INavigationService _navigationService;
-        private int _currentPage = 0;
-        private const int PageSize = 20;
+        get => _isRefreshing;
+        set => SetProperty(ref _isRefreshing, value);
+    }
 
-        [ObservableProperty]
-        private bool _isRefreshing;
+    private ObservableCollection<Post> _posts;
+    public ObservableCollection<Post> Posts
+    {
+        get => _posts;
+        set => SetProperty(ref _posts, value);
+    }
 
-        [ObservableProperty]
-        private ObservableCollection<Post> _posts;
+    public FeedViewModel(IApiService apiService, INavigationService navigationService)
+    {
+        Title = "Feed";
+        _apiService = apiService;
+        _navigationService = navigationService;
+        Posts = new ObservableCollection<Post>();
+        LoadInitialDataCommand.Execute(null);
+    }
 
-        public FeedViewModel(IApiService apiService, INavigationService navigationService)
+    [RelayCommand]
+    private async Task LoadInitialData()
+    {
+        if (IsBusy) return;
+
+        try
         {
-            _apiService = apiService;
-            _navigationService = navigationService;
-            Posts = new ObservableCollection<Post>();
-            LoadInitialData();
-        }
-
-        private async Task LoadInitialData()
-        {
-            try
+            IsBusy = true;
+            IsRefreshing = true;
+            _currentPage = 0;
+            var posts = await _apiService.GetFeedAsync(_currentPage * PageSize, PageSize);
+            Posts.Clear();
+            foreach (var post in posts)
             {
-                IsRefreshing = true;
-                _currentPage = 0;
-                var posts = await _apiService.GetFeedAsync(_currentPage * PageSize, PageSize);
-                Posts.Clear();
-                foreach (var post in posts)
-                {
-                    Posts.Add(post);
-                }
-            }
-            catch (Exception ex)
-            {
-                await Shell.Current.DisplayAlert("Error", "Failed to load feed", "OK");
-            }
-            finally
-            {
-                IsRefreshing = false;
+                Posts.Add(post);
             }
         }
-
-        [RelayCommand]
-        private async Task Refresh()
+        catch (Exception ex)
         {
+            await Shell.Current.DisplayAlert("Error", "Failed to load feed", "OK");
+            System.Diagnostics.Debug.WriteLine($"Feed loading error: {ex}");
+        }
+        finally
+        {
+            IsBusy = false;
+            IsRefreshing = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task Refresh()
+    {
+        await LoadInitialData();
+    }
+
+    [RelayCommand]
+    private async Task Like(Post post)
+    {
+        if (IsBusy) return;
+
+        try
+        {
+            IsBusy = true;
+            await _apiService.LikePostAsync(post.Id);
             await LoadInitialData();
         }
-
-        [RelayCommand]
-        private async Task LoadMore()
+        catch (Exception ex)
         {
-            try
-            {
-                _currentPage++;
-                var posts = await _apiService.GetFeedAsync(_currentPage * PageSize, PageSize);
-                foreach (var post in posts)
-                {
-                    Posts.Add(post);
-                }
-            }
-            catch (Exception ex)
-            {
-                // Silently fail on load more
-                _currentPage--;
-            }
+            await Shell.Current.DisplayAlert("Error", "Failed to like post", "OK");
+            System.Diagnostics.Debug.WriteLine($"Like error: {ex}");
         }
-
-        [RelayCommand]
-        private async Task LikePostAsync(Post post)
+        finally
         {
-            try
-            {
-                if (post.IsLiked)
-                {
-                    await _apiService.UnlikePostAsync(post.Id);
-                    post.IsLiked = false;
-                    post.LikesCount--;
-                }
-                else
-                {
-                    await _apiService.LikePostAsync(post.Id);
-                    post.IsLiked = true;
-                    post.LikesCount++;
-                }
-            }
-            catch (Exception ex)
-            {
-                await Shell.Current.DisplayAlert("Error", "Failed to update like status", "OK");
-            }
+            IsBusy = false;
         }
+    }
 
-        [RelayCommand]
-        private async Task ShowComments(Post post)
+    [RelayCommand]
+    private async Task Comment(Post post)
+    {
+        if (IsBusy) return;
+
+        try
         {
-            await _navigationService.NavigateToAsync("CommentsPage", new Dictionary<string, object>
-            {
-                { "PostId", post.Id }
-            });
+            IsBusy = true;
+            await _navigationService.NavigateToAsync($"post/comments?postId={post.Id}");
         }
-
-        [RelayCommand]
-        private async Task CreatePost()
+        catch (Exception ex)
         {
-            await _navigationService.NavigateToAsync("CreatePostPage");
+            await Shell.Current.DisplayAlert("Error", "Failed to open comments", "OK");
+            System.Diagnostics.Debug.WriteLine($"Comment navigation error: {ex}");
         }
-
-        [RelayCommand]
-        private async Task OpenProfile()
+        finally
         {
-            await _navigationService.NavigateToAsync("ProfilePage");
+            IsBusy = false;
         }
+    }
 
-        [RelayCommand]
-        private async Task OpenChat()
+    [RelayCommand]
+    private async Task NewPost()
+    {
+        if (IsBusy) return;
+
+        try
         {
-            await _navigationService.NavigateToAsync("ChatListPage");
+            IsBusy = true;
+            await _navigationService.NavigateToAsync("post/create");
         }
-
-        [RelayCommand]
-        private async Task SharePost(Post post)
+        catch (Exception ex)
         {
-            await Share.RequestAsync(new ShareTextRequest
-            {
-                Text = post.Content,
-                Title = "Share Post"
-            });
+            await Shell.Current.DisplayAlert("Error", "Failed to open new post page", "OK");
+            System.Diagnostics.Debug.WriteLine($"New post navigation error: {ex}");
         }
-
-        [RelayCommand]
-        private async Task ShowPostOptions(Post post)
+        finally
         {
-            var action = await Shell.Current.DisplayActionSheet(
-                "Post Options",
-                "Cancel",
-                null,
-                "Report Post",
-                "Copy Link",
-                "Share"
-            );
+            IsBusy = false;
+        }
+    }
 
-            switch (action)
-            {
-                case "Report Post":
-                    await _apiService.ReportPostAsync(post.Id);
-                    await Shell.Current.DisplayAlert("Success", "Post reported", "OK");
-                    break;
-                case "Copy Link":
-                    await Clipboard.SetTextAsync($"https://connecthub.app/posts/{post.Id}");
-                    break;
-                case "Share":
-                    await SharePost(post);
-                    break;
-            }
+    [RelayCommand]
+    private async Task OpenProfile()
+    {
+        if (IsBusy) return;
+
+        try
+        {
+            IsBusy = true;
+            await Shell.Current.GoToAsync("//profile");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    private async Task OpenChat()
+    {
+        if (IsBusy) return;
+
+        try
+        {
+            IsBusy = true;
+            await Shell.Current.GoToAsync("//chat");
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
 }

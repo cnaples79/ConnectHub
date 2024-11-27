@@ -51,35 +51,35 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			PjJHX4wCjsC2Jk+d7AR/czoI774oVlowOjG58kVlELQ=
+			8WgcCmdisgFYdjL8uruokCfvQkMLHTT8GOcmMT5+vus=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.App.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			4YJXSLDVt4XrZwMNdxEFGjx7PTOJ9kGHV46rXKXRWgI=
+			WuFbbmcaRF2FEytaUzme06Vbrnj8vrJRHFbys4ickhE=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.App.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			8L00mkTu31HFbqHxpSofLUItyNhKgJ/FrAjZVdA0GNg=
+			Uc9AVI15aa5C+qFINBLGM+962a9EdyjjjKouUUmMA+Y=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.Shared.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			mOwCl7wl/MYb8KOuzrcNb40n2yLA7ySFX0ogUWMSCLM=
+			upEQEQuh5lCMnMD4YwBxGobrfe/FPkr4clG/emmr/UU=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.Shared.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			njiLG44jPrA1sgpyOl583y26jumc+e8iolL2rIOHnWw=
+			YAJlrS9pvn3a6nalsk/Rx1yOg5Eu4weXvTXjRyJBVDk=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.AspNetCore.Connections.Abstractions.dll</key>
@@ -247,14 +247,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			t8W55ca60BWVNaXntBjckVT+sTBJ8WrqGcpppxDnFYQ=
+			jk5TmwF+3CqlElJ3ZEtBZjCzQlpZoM4XNsYhbemhX+Y=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.MacCatalyst.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			jrnj/ObBPS8U7wHRnK4xGHNEhw6lNEbel/W6aujFIRA=
+			5/AmFKoj8IvfDU5XUWntyUFbqkGqb2856UXx4i6d8Gg=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.Maui.Controls.Xaml.dll</key>
@@ -275,7 +275,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			ZEIXL2GbcAU//epNLDEobE5lUBFp+I4uCBYlfwPxiAU=
+			4wUYkUBnFEQXDodiJjtbQ0BI2Gt26X3rAHAfMbKt2dM=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.Maui.Graphics.dll</key>

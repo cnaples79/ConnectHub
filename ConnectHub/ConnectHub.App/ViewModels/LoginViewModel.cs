@@ -53,17 +53,32 @@ namespace ConnectHub.App.ViewModels
                 
                 if (!string.IsNullOrEmpty(token))
                 {
+                    // Store the token in preferences
+                    Preferences.Default.Set("AuthToken", token);
+
                     // Get the AppShell instance and show main tabs
                     if (Application.Current?.MainPage is AppShell appShell)
                     {
-                        appShell.ShowMainTabs();
+                        await MainThread.InvokeOnMainThreadAsync(() =>
+                        {
+                            appShell.ShowMainTabs();
+                        });
                     }
+                }
+                else
+                {
+                    await Application.Current.MainPage.DisplayAlert("Error", "Invalid login credentials", "OK");
                 }
             }
             catch (HttpRequestException ex)
             {
                 await Application.Current.MainPage.DisplayAlert("Error", "Login failed. Please check your credentials and try again.", "OK");
                 System.Diagnostics.Debug.WriteLine($"Login error: {ex}");
+            }
+            catch (Exception ex)
+            {
+                await Application.Current.MainPage.DisplayAlert("Error", "An unexpected error occurred", "OK");
+                System.Diagnostics.Debug.WriteLine($"Unexpected login error: {ex}");
             }
             finally
             {

@@ -8,41 +8,45 @@
 
     <Shell.Resources>
         <ResourceDictionary>
-            <!-- Add any shell-specific resources here -->
+            <Style x:Key="BaseStyle" TargetType="Element">
+                <Setter Property="Shell.BackgroundColor" Value="#121212"/>
+                <Setter Property="Shell.ForegroundColor" Value="White"/>
+                <Setter Property="Shell.TitleColor" Value="White"/>
+                <Setter Property="Shell.TabBarBackgroundColor" Value="#1E1E1E"/>
+                <Setter Property="Shell.TabBarUnselectedColor" Value="#95FFFFFF"/>
+                <Setter Property="Shell.TabBarTitleColor" Value="White"/>
+            </Style>
+            <Style TargetType="ShellContent" BasedOn="{StaticResource BaseStyle}" />
         </ResourceDictionary>
     </Shell.Resources>
 
     <TabBar x:Name="AuthenticationTabs" Route="authentication">
-        <Tab Title="Authentication">
-            <ShellContent
-                Title="Login"
-                ContentTemplate="{DataTemplate views:LoginPage}"
-                Route="login" />
-
-            <ShellContent
-                Title="Register"
-                ContentTemplate="{DataTemplate views:RegisterPage}"
-                Route="register" />
-        </Tab>
+        <ShellContent
+            Title="Login"
+            ContentTemplate="{DataTemplate views:LoginPage}"
+            Route="login" />
+        <ShellContent
+            Title="Register"
+            ContentTemplate="{DataTemplate views:RegisterPage}"
+            Route="register" />
     </TabBar>
 
     <TabBar x:Name="MainTabs" Route="main" IsVisible="False">
-        <Tab Title="Main">
-            <ShellContent
-                Title="Feed"
-                ContentTemplate="{DataTemplate views:FeedPage}"
-                Route="feed" />
-
-            <ShellContent
-                Title="Chat"
-                ContentTemplate="{DataTemplate views:ChatPage}"
-                Route="chat" />
-
-            <ShellContent
-                Title="Profile"
-                ContentTemplate="{DataTemplate views:ProfilePage}"
-                Route="profile" />
-        </Tab>
+        <ShellContent
+            Title="Feed"
+            Icon="feed_icon"
+            ContentTemplate="{DataTemplate views:FeedPage}"
+            Route="feed" />
+        <ShellContent
+            Title="Chat"
+            Icon="chat_icon"
+            ContentTemplate="{DataTemplate views:ChatPage}"
+            Route="chat" />
+        <ShellContent
+            Title="Profile"
+            Icon="profile_icon"
+            ContentTemplate="{DataTemplate views:ProfilePage}"
+            Route="profile" />
     </TabBar>
 
 </Shell>

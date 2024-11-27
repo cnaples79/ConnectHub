@@ -50,15 +50,16 @@
                      Command="{Binding RefreshCommand}"
                      IsRefreshing="{Binding IsRefreshing}">
             <CollectionView ItemsSource="{Binding Posts}"
-                          RemainingItemsThreshold="2"
-                          RemainingItemsThresholdReachedCommand="{Binding LoadMoreCommand}">
+                          EmptyView="No posts to display">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="model:Post">
-                        <Border Margin="10,5"
-                                BackgroundColor="#1E1E1E"
-                                StrokeShape="RoundRectangle 10"
-                                Padding="10">
-                            <Grid RowDefinitions="Auto,Auto,Auto,Auto">
+                        <Frame Margin="10,5"
+                               Padding="10"
+                               BackgroundColor="#1E1E1E"
+                               BorderColor="Transparent"
+                               CornerRadius="10">
+                            <Grid RowDefinitions="Auto,Auto,Auto,Auto"
+                                  RowSpacing="10">
                                 <!-- User Info -->
                                 <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
                                     <Image Grid.Column="0"
@@ -66,60 +67,44 @@
                                            HeightRequest="40"
                                            WidthRequest="40"
                                            Aspect="AspectFill"/>
-                                    <VerticalStackLayout Grid.Column="1" Margin="10,0">
-                                        <Label Text="{Binding User.Username}"
-                                               TextColor="White"
-                                               FontAttributes="Bold"/>
-                                        <Label Text="{Binding CreatedAt, StringFormat='{0:g}'}"
-                                               TextColor="#808080"
-                                               FontSize="12"/>
-                                    </VerticalStackLayout>
-                                    <Button Grid.Column="2"
-                                            Text="..."
-                                            BackgroundColor="Transparent"
-                                            TextColor="#2196F3"
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:FeedViewModel}}, Path=ShowPostOptionsCommand}"
-                                            CommandParameter="{Binding .}"/>
+                                    <Label Grid.Column="1"
+                                           Text="{Binding User.Username}"
+                                           TextColor="White"
+                                           FontAttributes="Bold"
+                                           VerticalOptions="Center"
+                                           Margin="10,0"/>
+                                    <Label Grid.Column="2"
+                                           Text="{Binding CreatedAt, StringFormat='{0:MM/dd/yyyy}'}"
+                                           TextColor="Gray"
+                                           VerticalOptions="Center"/>
                                 </Grid>
 
                                 <!-- Post Content -->
                                 <Label Grid.Row="1"
                                        Text="{Binding Content}"
-                                       TextColor="White"
-                                       Margin="0,10"/>
+                                       TextColor="White"/>
 
                                 <!-- Post Image -->
                                 <Image Grid.Row="2"
                                        Source="{Binding ImageUrl}"
-                                       Aspect="AspectFill"
                                        HeightRequest="200"
-                                       IsVisible="{Binding ImageUrl, Converter={StaticResource NotNullConverter}}"/>
+                                       Aspect="AspectFill"
+                                       IsVisible="{Binding ImageUrl, Converter={StaticResource StringNotNullOrEmptyConverter}}"/>
 
-                                <!-- Interaction Bar -->
-                                <Grid Grid.Row="3" 
-                                      ColumnDefinitions="*,*,*"
-                                      Margin="0,10,0,0">
+                                <!-- Interaction Buttons -->
+                                <Grid Grid.Row="3" ColumnDefinitions="Auto,Auto,*">
                                     <Button Grid.Column="0"
-                                            Text="{Binding LikesCount, StringFormat='{0} Likes'}"
-                                            BackgroundColor="Transparent"
-                                            TextColor="#2196F3"
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:FeedViewModel}}, Path=LikePostCommand}"
-                                            CommandParameter="{Binding .}"/>
+                                            Text="Like"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:FeedViewModel}}, Path=LikeCommand}"
+                                            CommandParameter="{Binding}"/>
                                     <Button Grid.Column="1"
-                                            Text="Comments"
-                                            BackgroundColor="Transparent"
-                                            TextColor="#2196F3"
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:FeedViewModel}}, Path=ShowCommentsCommand}"
-                                            CommandParameter="{Binding .}"/>
-                                    <Button Grid.Column="2"
-                                            Text="Share"
-                                            BackgroundColor="Transparent"
-                                            TextColor="#2196F3"
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:FeedViewModel}}, Path=SharePostCommand}"
-                                            CommandParameter="{Binding .}"/>
+                                            Text="Comment"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:FeedViewModel}}, Path=CommentCommand}"
+                                            CommandParameter="{Binding}"
+                                            Margin="10,0"/>
                                 </Grid>
                             </Grid>
-                        </Border>
+                        </Frame>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
@@ -128,11 +113,8 @@
         <!-- New Post Button -->
         <Button Grid.Row="2"
                 Text="New Post"
-                BackgroundColor="#2196F3"
-                TextColor="White"
-                Margin="20,10"
-                CornerRadius="25"
-                HeightRequest="50"
-                Command="{Binding CreatePostCommand}"/>
+                Command="{Binding NewPostCommand}"
+                Margin="20"
+                BackgroundColor="#2196F3"/>
     </Grid>
 </ContentPage>
