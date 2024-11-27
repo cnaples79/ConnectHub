@@ -1,8 +1,6 @@
 using Microsoft.Maui.Controls;
 using ConnectHub.App.Views;
-using Microsoft.Maui.Dispatching;
 using System.Diagnostics;
-using System;
 
 namespace ConnectHub.App
 {
@@ -14,13 +12,16 @@ namespace ConnectHub.App
         {
             try
             {
+                Debug.WriteLine("Initializing AppShell...");
                 InitializeComponent();
                 _preferences = Preferences.Default;
+                
+                Debug.WriteLine("Registering routes...");
                 RegisterRoutes();
                 
-                // Delay the authentication check until the page is fully loaded
-                Dispatcher.Dispatch(() => 
+                MainThread.BeginInvokeOnMainThread(() => 
                 {
+                    Debug.WriteLine("Checking initial authentication state...");
                     CheckAuthenticationState();
                 });
                 
@@ -39,7 +40,7 @@ namespace ConnectHub.App
         {
             try
             {
-                Debug.WriteLine("Registering routes...");
+                Debug.WriteLine("Starting route registration...");
                 
                 Routing.RegisterRoute("login", typeof(LoginPage));
                 Routing.RegisterRoute("register", typeof(RegisterPage));
@@ -62,21 +63,21 @@ namespace ConnectHub.App
         {
             try
             {
-                Debug.WriteLine("Showing authentication tabs");
-                MainTabs.IsVisible = false;
-                AuthenticationTabs.IsVisible = true;
-                
-                MainThread.BeginInvokeOnMainThread(async () =>
+                Debug.WriteLine("ShowAuthenticationTabs called");
+                MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    try 
+                    Debug.WriteLine("Setting tab visibility - Auth:true, Main:false");
+                    MainTabs.IsVisible = false;
+                    AuthenticationTabs.IsVisible = true;
+                    
+                    Debug.WriteLine("Attempting navigation to login...");
+                    Current.GoToAsync("//login").ContinueWith(t =>
                     {
-                        await Current.GoToAsync("///login");
-                        Debug.WriteLine("Navigated to login page");
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"Navigation to login failed: {ex}");
-                    }
+                        if (t.Exception != null)
+                            Debug.WriteLine($"Navigation to login failed: {t.Exception}");
+                        else
+                            Debug.WriteLine("Navigation to login completed");
+                    });
                 });
             }
             catch (Exception ex)
@@ -89,20 +90,47 @@ namespace ConnectHub.App
         {
             try
             {
-                Debug.WriteLine("Showing main tabs");
-                AuthenticationTabs.IsVisible = false;
-                MainTabs.IsVisible = true;
-                
-                MainThread.BeginInvokeOnMainThread(async () =>
+                Debug.WriteLine("ShowMainTabs called");
+                MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    try 
+                    try
                     {
-                        await Current.GoToAsync("///feed");
-                        Debug.WriteLine("Navigated to feed page");
+                        Debug.WriteLine("Setting tab visibility - Auth:false, Main:true");
+                        AuthenticationTabs.IsVisible = false;
+                        MainTabs.IsVisible = true;
+
+                        Debug.WriteLine($"MainTabs.Items count: {MainTabs.Items.Count}");
+                        var firstItem = MainTabs.Items.FirstOrDefault();
+                        Debug.WriteLine($"First tab type: {firstItem?.GetType().Name}");
+
+                        if (firstItem is ShellSection feedSection)
+                        {
+                            Debug.WriteLine($"FeedSection.Items count: {feedSection.Items.Count}");
+                            var firstContent = feedSection.Items.FirstOrDefault();
+                            Debug.WriteLine($"First content type: {firstContent?.GetType().Name}");
+
+                            if (firstContent is ShellContent feedContent)
+                            {
+                                Debug.WriteLine("Creating feed content...");
+                                var content = feedContent.ContentTemplate.CreateContent();
+                                Debug.WriteLine($"Feed content created: {content?.GetType().Name}");
+                            }
+                            else
+                            {
+                                Debug.WriteLine("First content is not ShellContent");
+                            }
+                        }
+                        else
+                        {
+                            Debug.WriteLine("First item is not ShellSection");
+                        }
+                        
+                        Debug.WriteLine("Main tabs shown successfully");
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"Navigation to feed failed: {ex}");
+                        Debug.WriteLine($"Error showing main tabs: {ex}");
+                        throw;
                     }
                 });
             }
@@ -118,6 +146,8 @@ namespace ConnectHub.App
             {
                 Debug.WriteLine("Checking authentication state");
                 var token = _preferences?.Get("auth_token", string.Empty);
+                Debug.WriteLine($"Token exists: {!string.IsNullOrEmpty(token)}");
+                
                 if (string.IsNullOrEmpty(token))
                 {
                     Debug.WriteLine("No token found, showing authentication tabs");
@@ -139,13 +169,13 @@ namespace ConnectHub.App
         protected override void OnNavigating(ShellNavigatingEventArgs args)
         {
             base.OnNavigating(args);
-            Debug.WriteLine($"Navigating to: {args.Target?.Location?.OriginalString ?? "unknown"}");
+            Debug.WriteLine($"OnNavigating - Source: {args.Current?.Location?.OriginalString ?? "null"}, Target: {args.Target?.Location?.OriginalString ?? "null"}");
         }
 
         protected override void OnNavigated(ShellNavigatedEventArgs args)
         {
             base.OnNavigated(args);
-            Debug.WriteLine($"Navigated to: {args.Current?.Location?.OriginalString ?? "unknown"}");
+            Debug.WriteLine($"OnNavigated - Current: {args.Current?.Location?.OriginalString ?? "null"}, Previous: {args.Previous?.Location?.OriginalString ?? "null"}");
         }
     }
 }

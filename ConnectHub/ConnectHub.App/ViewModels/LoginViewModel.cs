@@ -35,6 +35,7 @@ namespace ConnectHub.App.ViewModels
             _apiService = apiService;
             _navigationService = navigationService;
             Title = "Login";
+            Debug.WriteLine("LoginViewModel initialized");
         }
 
         [RelayCommand]
@@ -49,53 +50,42 @@ namespace ConnectHub.App.ViewModels
             try
             {
                 IsLoading = true;
-                Debug.WriteLine("Attempting login...");
+                Debug.WriteLine($"Attempting login with email: {Email}...");
                 var token = await _apiService.LoginAsync(Email, Password);
                 
                 if (!string.IsNullOrEmpty(token))
                 {
-                    Debug.WriteLine("Login successful, storing token...");
+                    Debug.WriteLine($"Login successful, token received: {token.Substring(0, 10)}...");
                     Preferences.Default.Set("auth_token", token);
+                    Debug.WriteLine("Token stored in preferences");
 
                     if (Application.Current?.MainPage is AppShell appShell)
                     {
-                        Debug.WriteLine("Showing main tabs...");
+                        Debug.WriteLine("Found AppShell, attempting to show main tabs...");
                         await MainThread.InvokeOnMainThreadAsync(() =>
                         {
                             try
                             {
+                                Debug.WriteLine("Calling ShowMainTabs...");
                                 appShell.ShowMainTabs();
-                                Debug.WriteLine("Main tabs shown successfully");
+                                Debug.WriteLine("ShowMainTabs called successfully");
                             }
                             catch (Exception ex)
                             {
-                                Debug.WriteLine($"Error showing main tabs: {ex}");
-                            }
-                        });
-
-                        Debug.WriteLine("Navigating to feed...");
-                        await MainThread.InvokeOnMainThreadAsync(async () =>
-                        {
-                            try
-                            {
-                                await Shell.Current.GoToAsync($"///feed");
-                                Debug.WriteLine("Navigation to feed completed");
-                            }
-                            catch (Exception ex)
-                            {
-                                Debug.WriteLine($"Navigation error: {ex}");
-                                await Application.Current.MainPage.DisplayAlert("Error", "Navigation failed", "OK");
+                                Debug.WriteLine($"Error in ShowMainTabs: {ex}");
+                                throw;
                             }
                         });
                     }
                     else
                     {
-                        Debug.WriteLine("MainPage is not AppShell");
+                        Debug.WriteLine($"MainPage is not AppShell, it is: {Application.Current?.MainPage?.GetType().Name}");
                         await Application.Current.MainPage.DisplayAlert("Error", "Navigation failed", "OK");
                     }
                 }
                 else
                 {
+                    Debug.WriteLine("Login failed - empty token received");
                     await Application.Current.MainPage.DisplayAlert("Error", "Invalid login credentials", "OK");
                 }
             }
@@ -118,7 +108,8 @@ namespace ConnectHub.App.ViewModels
         [RelayCommand]
         private async Task NavigateToRegisterAsync()
         {
-            await _navigationService.NavigateToAsync("//register");
+            Debug.WriteLine("Navigating to register page...");
+            await Shell.Current.GoToAsync("//register");
         }
     }
 }

@@ -12,6 +12,10 @@
 		<data>
 		nXKwqmOMKePj/WWJfwuw2PWplSM=
 		</data>
+		<key>Resources/MauiInfo.plist</key>
+		<data>
+		iEtuUGCV6JM3gxS/pO33swhmpp8=
+		</data>
 		<key>Resources/MonoTouchDebugConfiguration.txt</key>
 		<data>
 		oowkf1sL6T19nanXUObgmuayWqM=
@@ -54,28 +58,28 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			ftHYWkKdEsZswohimCoDRdOu6lFlqRLSSNwBq7VVlEY=
+			DFn/WSZmFMZgzDl3OsOsiQ5PrK0/FJ0M8Afa/ymX1OQ=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.App.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			3hgam71Ds48At6ktLKk2t/o4LoNBFX3kPniX5hakCqw=
+			y+MzaLbELJsn5E3IZ48iS/2yMz9Fh8hD3kOO4CuBZTE=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.Shared.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			AeT3qsd9tXN/4GSgj0fJcbV6OPCtPvsr/Ot3cEFRbrw=
+			TpP7GPG1kH1Qhe1RvJjcDSrUpSsvwRn0SnPs8fAO7kc=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.Shared.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			FfUs9b+JAH0QOTpE2pvBA1KmnBahKXptedL6ZkE5GuM=
+			0AbaVzU5Kxal+omAAOm0tdOTUgGf9XT7aZXiP5r2K7Y=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.AspNetCore.Connections.Abstractions.dll</key>
@@ -271,7 +275,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			5g9DwO59SWXVyugP3boLqDpVjmjcgfX5GoTi6oZ+CRU=
+			JEBm+VvMD5cQCvAF1z8AQ6nM81YKJKdsrt8layGLM/8=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.Maui.Graphics.dll</key>
@@ -544,14 +548,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			asW0PsW6QCyJwbvWYR3SIVbhVG9AGdvcZr9waMKDs/E=
+			5bqeL18CsnMaUDzF91S/Z31bDWc5lEvOlJZEpsA/hic=
 			</data>
 		</dict>
 		<key>MonoBundle/System.Private.CoreLib.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			YvwLcZAJt0UcEbZJOJmft7sv4iBeeM2lLPZN13ljN+k=
+			ClMnIxAC9DcJhJTcobx2TWiziyWkV3qiP9w+vyTBMHM=
 			</data>
 		</dict>
 		<key>MonoBundle/System.Private.Uri.dll</key>
@@ -1028,6 +1032,13 @@
 			<key>hash2</key>
 			<data>
 			O5IQBl5HqQtC8bsVRF/ML9Ajezrtwb1JReotng0tg4I=
+			</data>
+		</dict>
+		<key>Resources/MauiInfo.plist</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			tx0KXqEC+DvcCGyogQTEQWHcCWJYYqH24NtPwhpQEjo=
 			</data>
 		</dict>
 		<key>Resources/MonoTouchDebugConfiguration.txt</key>
