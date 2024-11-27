@@ -40,7 +40,7 @@ namespace ConnectHub.App
             try
             {
                 Debug.WriteLine("Registering routes...");
-                // Register routes for navigation
+                
                 Routing.RegisterRoute("login", typeof(LoginPage));
                 Routing.RegisterRoute("register", typeof(RegisterPage));
                 Routing.RegisterRoute("feed", typeof(FeedPage));
@@ -62,12 +62,21 @@ namespace ConnectHub.App
         {
             try
             {
+                Debug.WriteLine("Showing authentication tabs");
                 MainTabs.IsVisible = false;
                 AuthenticationTabs.IsVisible = true;
                 
                 MainThread.BeginInvokeOnMainThread(async () =>
                 {
-                    await Current.GoToAsync("//login");
+                    try 
+                    {
+                        await Current.GoToAsync("///login");
+                        Debug.WriteLine("Navigated to login page");
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Navigation to login failed: {ex}");
+                    }
                 });
             }
             catch (Exception ex)
@@ -80,12 +89,21 @@ namespace ConnectHub.App
         {
             try
             {
+                Debug.WriteLine("Showing main tabs");
                 AuthenticationTabs.IsVisible = false;
                 MainTabs.IsVisible = true;
                 
                 MainThread.BeginInvokeOnMainThread(async () =>
                 {
-                    await Current.GoToAsync("//feed");
+                    try 
+                    {
+                        await Current.GoToAsync("///feed");
+                        Debug.WriteLine("Navigated to feed page");
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Navigation to feed failed: {ex}");
+                    }
                 });
             }
             catch (Exception ex)
@@ -98,13 +116,16 @@ namespace ConnectHub.App
         {
             try
             {
+                Debug.WriteLine("Checking authentication state");
                 var token = _preferences?.Get("auth_token", string.Empty);
                 if (string.IsNullOrEmpty(token))
                 {
+                    Debug.WriteLine("No token found, showing authentication tabs");
                     ShowAuthenticationTabs();
                 }
                 else
                 {
+                    Debug.WriteLine("Token found, showing main tabs");
                     ShowMainTabs();
                 }
             }

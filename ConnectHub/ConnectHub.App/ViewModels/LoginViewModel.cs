@@ -1,5 +1,6 @@
 using ConnectHub.App.Services;
 using CommunityToolkit.Mvvm.Input;
+using System.Diagnostics;
 
 namespace ConnectHub.App.ViewModels
 {
@@ -48,21 +49,49 @@ namespace ConnectHub.App.ViewModels
             try
             {
                 IsLoading = true;
+                Debug.WriteLine("Attempting login...");
                 var token = await _apiService.LoginAsync(Email, Password);
                 
                 if (!string.IsNullOrEmpty(token))
                 {
-                    // Store the token in preferences with consistent key
+                    Debug.WriteLine("Login successful, storing token...");
                     Preferences.Default.Set("auth_token", token);
 
-                    // Get the AppShell instance and show main tabs
                     if (Application.Current?.MainPage is AppShell appShell)
                     {
+                        Debug.WriteLine("Showing main tabs...");
+                        await MainThread.InvokeOnMainThreadAsync(() =>
+                        {
+                            try
+                            {
+                                appShell.ShowMainTabs();
+                                Debug.WriteLine("Main tabs shown successfully");
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.WriteLine($"Error showing main tabs: {ex}");
+                            }
+                        });
+
+                        Debug.WriteLine("Navigating to feed...");
                         await MainThread.InvokeOnMainThreadAsync(async () =>
                         {
-                            appShell.ShowMainTabs();
-                            await Shell.Current.GoToAsync("//feed");
+                            try
+                            {
+                                await Shell.Current.GoToAsync($"///feed");
+                                Debug.WriteLine("Navigation to feed completed");
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.WriteLine($"Navigation error: {ex}");
+                                await Application.Current.MainPage.DisplayAlert("Error", "Navigation failed", "OK");
+                            }
                         });
+                    }
+                    else
+                    {
+                        Debug.WriteLine("MainPage is not AppShell");
+                        await Application.Current.MainPage.DisplayAlert("Error", "Navigation failed", "OK");
                     }
                 }
                 else
@@ -72,13 +101,13 @@ namespace ConnectHub.App.ViewModels
             }
             catch (HttpRequestException ex)
             {
+                Debug.WriteLine($"Login HTTP error: {ex}");
                 await Application.Current.MainPage.DisplayAlert("Error", "Login failed. Please check your credentials and try again.", "OK");
-                System.Diagnostics.Debug.WriteLine($"Login error: {ex}");
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"Unexpected login error: {ex}");
                 await Application.Current.MainPage.DisplayAlert("Error", "An unexpected error occurred", "OK");
-                System.Diagnostics.Debug.WriteLine($"Unexpected login error: {ex}");
             }
             finally
             {
