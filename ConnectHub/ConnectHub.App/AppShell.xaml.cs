@@ -19,6 +19,7 @@ namespace ConnectHub.App
         {
             InitializeComponent();
             _preferences = preferences;
+            BindingContext = this;
 
             // Register routes
             RegisterRoutes();
@@ -26,7 +27,11 @@ namespace ConnectHub.App
             LogoutCommand = new Command(async () => await HandleLogout());
 
             // Store reference to logout button
-            _logoutButton = ToolbarItems.FirstOrDefault(item => item.Text == "Logout");
+            _logoutButton = new ToolbarItem
+            {
+                Text = "Logout",
+                Command = LogoutCommand
+            };
 
             // Set initial state
             var token = _preferences.Get<string>("auth_token", string.Empty);
