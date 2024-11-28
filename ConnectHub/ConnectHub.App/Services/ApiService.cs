@@ -167,23 +167,38 @@ namespace ConnectHub.App.Services
         {
             try
             {
+                // Ensure token is set
+                if (string.IsNullOrEmpty(Token))
+                {
+                    Debug.WriteLine("No auth token found for create post request");
+                    throw new UnauthorizedAccessException("No authentication token found");
+                }
+
+                if (!_httpClient.DefaultRequestHeaders.Contains("Authorization"))
+                {
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);
+                    Debug.WriteLine("Added token to request headers");
+                }
+
                 using var form = new MultipartFormDataContent();
-                form.Add(new StringContent(content), "content");
-                
+                form.Add(new StringContent(content), "Content"); // Changed to match DTO property name
+
                 if (latitude.HasValue)
-                    form.Add(new StringContent(latitude.Value.ToString()), "latitude");
+                    form.Add(new StringContent(latitude.Value.ToString()), "Latitude");
                 
                 if (longitude.HasValue)
-                    form.Add(new StringContent(longitude.Value.ToString()), "longitude");
+                    form.Add(new StringContent(longitude.Value.ToString()), "Longitude");
 
                 if (imageStream != null && fileName != null)
                 {
                     var imageContent = new StreamContent(imageStream);
                     imageContent.Headers.ContentType = new MediaTypeHeaderValue(GetMimeType(fileName));
-                    form.Add(imageContent, "image", fileName);
+                    form.Add(imageContent, "Image", fileName);
                 }
 
+                Debug.WriteLine("Sending create post request...");
                 var response = await _httpClient.PostAsync("/api/post", form);
+                Debug.WriteLine($"Create post response status: {response.StatusCode}");
                 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -192,7 +207,10 @@ namespace ConnectHub.App.Services
                     throw new HttpRequestException($"Failed to create post: {errorContent}");
                 }
                 
-                var post = await response.Content.ReadFromJsonAsync<Post>();
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Debug.WriteLine($"Create post response: {responseContent}");
+                
+                var post = JsonConvert.DeserializeObject<Post>(responseContent);
                 if (post == null)
                 {
                     throw new HttpRequestException("Invalid response from server");

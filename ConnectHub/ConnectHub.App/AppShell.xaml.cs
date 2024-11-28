@@ -11,14 +11,16 @@ namespace ConnectHub.App
     public partial class AppShell : Shell
     {
         private readonly IPreferences _preferences;
+        private readonly IApiService _apiService;
         private readonly ToolbarItem _logoutButton;
         
         public ICommand LogoutCommand { get; }
 
-        public AppShell(IPreferences preferences)
+        public AppShell(IPreferences preferences, IApiService apiService)
         {
             InitializeComponent();
             _preferences = preferences;
+            _apiService = apiService;
             BindingContext = this;
 
             // Create logout button
@@ -51,6 +53,8 @@ namespace ConnectHub.App
                     UpdateUIState(false);
                 });
             }
+
+            Debug.WriteLine("AppShell initialized");
         }
 
         private void RegisterRoutes()
@@ -62,25 +66,27 @@ namespace ConnectHub.App
             Routing.RegisterRoute("profile", typeof(ProfilePage));
             Routing.RegisterRoute("post/create", typeof(NewPostPage));
             Routing.RegisterRoute("post/comments", typeof(CommentsPage));
+            
+            Debug.WriteLine("Routes registered");
         }
 
         private async Task HandleLogout()
         {
             try
             {
+                Debug.WriteLine("Handling logout...");
+                
                 // Clear the token
                 _preferences.Remove("auth_token");
                 
                 // Reset the HttpClient in ApiService
-                var apiService = Handler.MauiContext.Services.GetService<IApiService>();
-                if (apiService != null)
-                {
-                    apiService.Token = null;
-                }
+                _apiService.Token = null;
 
                 // Update UI and navigate
                 UpdateUIState(false);
                 await Current.GoToAsync("//authentication/login");
+                
+                Debug.WriteLine("Logout completed successfully");
             }
             catch (Exception ex)
             {
@@ -95,17 +101,25 @@ namespace ConnectHub.App
             {
                 try
                 {
+                    Debug.WriteLine($"Updating UI state, isLoggedIn: {isLoggedIn}");
+                    
                     if (isLoggedIn)
                     {
                         Current.CurrentItem = MainTabs;
                         if (!ToolbarItems.Contains(_logoutButton))
+                        {
                             ToolbarItems.Add(_logoutButton);
+                            Debug.WriteLine("Added logout button to toolbar");
+                        }
                     }
                     else
                     {
                         Current.CurrentItem = AuthenticationTabs;
                         if (ToolbarItems.Contains(_logoutButton))
+                        {
                             ToolbarItems.Remove(_logoutButton);
+                            Debug.WriteLine("Removed logout button from toolbar");
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -117,6 +131,7 @@ namespace ConnectHub.App
 
         public async Task ShowMainTabs()
         {
+            Debug.WriteLine("Showing main tabs...");
             UpdateUIState(true);
             await Current.GoToAsync("//main/feed");
         }

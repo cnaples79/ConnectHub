@@ -29,6 +29,9 @@ public static class MauiProgram
         builder.Services.AddSingleton<IApiService, ApiService>();
         builder.Services.AddSingleton<INavigationService, NavigationService>();
 
+        // Register AppShell
+        builder.Services.AddSingleton<AppShell>();
+
         // Register converters
         builder.Services.AddSingleton<BooleanToObjectConverter>();
 
@@ -50,9 +53,6 @@ public static class MauiProgram
         builder.Services.AddTransient<NewPostPage>();
         builder.Services.AddTransient<CommentsPage>();
         
-        // Register AppShell
-        builder.Services.AddSingleton<AppShell>();
-
 #if DEBUG
         builder.Logging.AddDebug().SetMinimumLevel(LogLevel.Trace);
 #endif
