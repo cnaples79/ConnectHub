@@ -2,6 +2,7 @@ using ConnectHub.API.Data;
 using ConnectHub.Shared.DTOs;
 using ConnectHub.Shared.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace ConnectHub.API.Services
 {
@@ -111,48 +112,55 @@ namespace ConnectHub.API.Services
                 LocationName = post.LocationName,
                 CreatedAt = post.CreatedAt,
                 UpdatedAt = post.UpdatedAt,
-                LikesCount = post.LikedBy.Count,
-                CommentsCount = post.Comments.Count,
-                IsLikedByCurrentUser = post.LikedBy.Any(u => u.Id == userId),
-                Comments = post.Comments
+                LikesCount = post.LikedBy?.Count ?? 0,
+                CommentsCount = post.Comments?.Count ?? 0,
+                IsLikedByCurrentUser = post.LikedBy?.Any(u => u.Id == userId) ?? false,
+                Comments = post.Comments?
                     .OrderByDescending(c => c.CreatedAt)
                     .Select(c => MapToCommentDto(c, userId))
-                    .ToList()
+                    .ToList() ?? new List<CommentDto>()
             };
         }
 
         public async Task<List<PostDto>> GetFeedAsync(int userId, int page = 1, int pageSize = 10)
         {
-            var posts = await _context.Posts
-                .Include(p => p.User)
-                .Include(p => p.Comments)
-                    .ThenInclude(c => c.User)
-                .Include(p => p.LikedBy)
-                .OrderByDescending(p => p.CreatedAt)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            return posts.Select(p => new PostDto
+            try
             {
-                Id = p.Id,
-                User = MapToUserDto(p.User),
-                Content = p.Content,
-                ImageUrl = p.ImageUrl,
-                Latitude = p.Latitude,
-                Longitude = p.Longitude,
-                LocationName = p.LocationName,
-                CreatedAt = p.CreatedAt,
-                UpdatedAt = p.UpdatedAt,
-                LikesCount = p.LikedBy.Count,
-                CommentsCount = p.Comments.Count,
-                IsLikedByCurrentUser = p.LikedBy.Any(u => u.Id == userId),
-                Comments = p.Comments
-                    .OrderByDescending(c => c.CreatedAt)
-                    .Take(3)
-                    .Select(c => MapToCommentDto(c, userId))
-                    .ToList()
-            }).ToList();
+                var posts = await _context.Posts
+                    .Include(p => p.User)
+                    .Include(p => p.Comments)
+                        .ThenInclude(c => c.User)
+                    .Include(p => p.LikedBy)
+                    .OrderByDescending(p => p.CreatedAt)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                return posts.Select(p => new PostDto
+                {
+                    Id = p.Id,
+                    User = MapToUserDto(p.User),
+                    Content = p.Content,
+                    ImageUrl = p.ImageUrl,
+                    Latitude = p.Latitude,
+                    Longitude = p.Longitude,
+                    LocationName = p.LocationName,
+                    CreatedAt = p.CreatedAt,
+                    UpdatedAt = p.UpdatedAt,
+                    LikesCount = p.LikedBy?.Count ?? 0,
+                    CommentsCount = p.Comments?.Count ?? 0,
+                    IsLikedByCurrentUser = p.LikedBy?.Any(u => u.Id == userId) ?? false,
+                    Comments = p.Comments?
+                        .OrderByDescending(c => c.CreatedAt)
+                        .Select(c => MapToCommentDto(c, userId))
+                        .ToList() ?? new List<CommentDto>()
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"GetFeedAsync error: {ex}");
+                throw;
+            }
         }
 
         public async Task<CommentDto> AddCommentAsync(CreateCommentDto createCommentDto, int userId)
@@ -188,7 +196,7 @@ namespace ConnectHub.API.Services
             return MapToCommentDto(comment, userId);
         }
 
-        private static UserDto MapToUserDto(User user)
+        private UserDto MapToUserDto(User user)
         {
             return new UserDto
             {
@@ -199,12 +207,13 @@ namespace ConnectHub.API.Services
                 ProfileImageUrl = user.ProfileImageUrl,
                 CreatedAt = user.CreatedAt,
                 LastActive = user.LastActive,
+                IsOnline = user.IsOnline,
                 FollowersCount = user.Followers?.Count ?? 0,
                 FollowingCount = user.Following?.Count ?? 0
             };
         }
 
-        private static CommentDto MapToCommentDto(Comment comment, int currentUserId)
+        private CommentDto MapToCommentDto(Comment comment, int currentUserId)
         {
             return new CommentDto
             {
@@ -276,14 +285,14 @@ namespace ConnectHub.API.Services
                 LocationName = p.LocationName,
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt,
-                LikesCount = p.LikedBy.Count,
-                CommentsCount = p.Comments.Count,
-                IsLikedByCurrentUser = p.LikedBy.Any(u => u.Id == userId),
-                Comments = p.Comments
+                LikesCount = p.LikedBy?.Count ?? 0,
+                CommentsCount = p.Comments?.Count ?? 0,
+                IsLikedByCurrentUser = p.LikedBy?.Any(u => u.Id == userId) ?? false,
+                Comments = p.Comments?
                     .OrderByDescending(c => c.CreatedAt)
                     .Take(3)
                     .Select(c => MapToCommentDto(c, userId))
-                    .ToList()
+                    .ToList() ?? new List<CommentDto>()
             }).ToList();
         }
 
@@ -319,14 +328,14 @@ namespace ConnectHub.API.Services
                 LocationName = p.LocationName,
                 CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt,
-                LikesCount = p.LikedBy.Count,
-                CommentsCount = p.Comments.Count,
-                IsLikedByCurrentUser = p.LikedBy.Any(u => u.Id == userId),
-                Comments = p.Comments
+                LikesCount = p.LikedBy?.Count ?? 0,
+                CommentsCount = p.Comments?.Count ?? 0,
+                IsLikedByCurrentUser = p.LikedBy?.Any(u => u.Id == userId) ?? false,
+                Comments = p.Comments?
                     .OrderByDescending(c => c.CreatedAt)
                     .Take(3)
                     .Select(c => MapToCommentDto(c, userId))
-                    .ToList()
+                    .ToList() ?? new List<CommentDto>()
             }).ToList();
         }
     }

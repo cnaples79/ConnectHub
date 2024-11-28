@@ -4,6 +4,7 @@ namespace ConnectHub.App.Services
 {
     public interface IApiService
     {
+        string? Token { get; set; }
         Task<string> LoginAsync(string email, string password);
         Task<bool> RegisterAsync(string username, string email, string password, string confirmPassword);
         Task<bool> LogoutAsync(int userId);

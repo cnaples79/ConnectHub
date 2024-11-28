@@ -3,6 +3,7 @@ using ConnectHub.Shared.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ConnectHub.App.Services;
+using System.Diagnostics;
 
 namespace ConnectHub.App.ViewModels;
 
@@ -29,45 +30,80 @@ public partial class FeedViewModel : BaseViewModel
 
     public FeedViewModel(IApiService apiService, INavigationService navigationService)
     {
+        Debug.WriteLine("Initializing FeedViewModel");
         Title = "Feed";
         _apiService = apiService;
         _navigationService = navigationService;
         Posts = new ObservableCollection<Post>();
-        LoadInitialDataCommand.Execute(null);
+        
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            try
+            {
+                Debug.WriteLine("Loading initial data from constructor");
+                await LoadInitialData();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error loading initial data: {ex}");
+            }
+        });
     }
 
     [RelayCommand]
     private async Task LoadInitialData()
     {
-        if (IsBusy) return;
+        if (IsBusy)
+            return;
 
         try
         {
             IsBusy = true;
-            IsRefreshing = true;
-            _currentPage = 0;
-            var posts = await _apiService.GetFeedAsync(_currentPage * PageSize, PageSize);
-            Posts.Clear();
-            foreach (var post in posts)
+            Debug.WriteLine("Loading initial feed data...");
+
+            var token = Preferences.Get("auth_token", string.Empty);
+            if (string.IsNullOrEmpty(token))
             {
-                Posts.Add(post);
+                Debug.WriteLine("No auth token found. Redirecting to login.");
+                await Shell.Current.GoToAsync("//login");
+                return;
             }
+
+            var posts = await _apiService.GetFeedAsync(0, 10);
+            if (posts != null && posts.Any())
+            {
+                Posts.Clear();
+                foreach (var post in posts)
+                {
+                    Posts.Add(post);
+                }
+                Debug.WriteLine($"Successfully loaded {posts.Count} posts");
+            }
+            else
+            {
+                Debug.WriteLine("No posts returned from API");
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            Debug.WriteLine($"HTTP error loading feed: {ex.Message}");
+            await Shell.Current.DisplayAlert("Error", "Failed to load feed. Please check your internet connection.", "OK");
         }
         catch (Exception ex)
         {
-            await Shell.Current.DisplayAlert("Error", "Failed to load feed", "OK");
-            System.Diagnostics.Debug.WriteLine($"Feed loading error: {ex}");
+            Debug.WriteLine($"Error loading feed: {ex}");
+            await Shell.Current.DisplayAlert("Error", "An unexpected error occurred while loading the feed.", "OK");
         }
         finally
         {
             IsBusy = false;
-            IsRefreshing = false;
         }
     }
 
     [RelayCommand]
     private async Task Refresh()
     {
+        Debug.WriteLine("Manual refresh requested");
         await LoadInitialData();
     }
 
@@ -84,8 +120,8 @@ public partial class FeedViewModel : BaseViewModel
         }
         catch (Exception ex)
         {
+            Debug.WriteLine($"Like error: {ex}");
             await Shell.Current.DisplayAlert("Error", "Failed to like post", "OK");
-            System.Diagnostics.Debug.WriteLine($"Like error: {ex}");
         }
         finally
         {

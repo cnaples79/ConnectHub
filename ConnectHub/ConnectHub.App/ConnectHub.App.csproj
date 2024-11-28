@@ -43,6 +43,10 @@
         <PublishTrimmed>true</PublishTrimmed>
     </PropertyGroup>
 
+    <PropertyGroup Condition="$(TargetFramework.Contains('-ios'))">
+        <PublishTrimmed>true</PublishTrimmed>
+    </PropertyGroup>
+
 	<ItemGroup>
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />

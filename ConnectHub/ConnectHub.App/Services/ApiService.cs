@@ -1,5 +1,8 @@
+using System;
+using System.Collections.Generic;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Diagnostics;
 using ConnectHub.Shared.Models;
 using Newtonsoft.Json;
 
@@ -11,7 +14,26 @@ namespace ConnectHub.App.Services
         private readonly string _baseUrl;
         private readonly IPreferences _preferences;
 
-        public string Token { get; set; }
+        public string? Token
+        {
+            get => _preferences.Get<string>("auth_token", null);
+            set
+            {
+                if (value == null)
+                    _preferences.Remove("auth_token");
+                else
+                    _preferences.Set("auth_token", value);
+                
+                if (value != null)
+                {
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", value);
+                }
+                else
+                {
+                    _httpClient.DefaultRequestHeaders.Authorization = null;
+                }
+            }
+        }
 
         public ApiService(IPreferences preferences)
         {
@@ -20,16 +42,19 @@ namespace ConnectHub.App.Services
                 ? "http://10.0.2.2:5000" // Android Emulator
                 : "http://localhost:5000"; // iOS Simulator or Local Debug
 
+            Debug.WriteLine($"Initializing ApiService with base URL: {_baseUrl}");
+
             _httpClient = new HttpClient
             {
                 BaseAddress = new Uri(_baseUrl)
             };
 
             // Add token if exists
-            var token = _preferences.Get("auth_token", string.Empty);
+            var token = _preferences.Get<string>("auth_token", string.Empty);
             if (!string.IsNullOrEmpty(token))
             {
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                Token = token;
+                Debug.WriteLine("Token found and set in HttpClient headers");
             }
         }
 
@@ -52,8 +77,7 @@ namespace ConnectHub.App.Services
                     throw new HttpRequestException("Invalid response from server");
                 }
                 
-                _preferences.Set("auth_token", result.Token);
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.Token);
+                Token = result.Token;
                 
                 return result.Token;
             }
@@ -94,9 +118,49 @@ namespace ConnectHub.App.Services
 
         public async Task<List<Post>> GetFeedAsync(int skip, int take)
         {
-            var response = await _httpClient.GetAsync($"/api/post/feed?skip={skip}&take={take}");
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<List<Post>>();
+            try
+            {
+                // Convert skip/take to page/pageSize
+                int page = (skip / take) + 1;
+                int pageSize = take;
+                
+                Debug.WriteLine($"Getting feed with page={page}, pageSize={pageSize}");
+                
+                // Ensure token is set
+                if (string.IsNullOrEmpty(Token))
+                {
+                    Debug.WriteLine("No auth token found for feed request");
+                    throw new UnauthorizedAccessException("No authentication token found");
+                }
+
+                if (!_httpClient.DefaultRequestHeaders.Contains("Authorization"))
+                {
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);
+                    Debug.WriteLine("Added token to request headers");
+                }
+
+                var response = await _httpClient.GetAsync($"/api/post?page={page}&pageSize={pageSize}");
+                Debug.WriteLine($"Feed API response status: {response.StatusCode}");
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    Debug.WriteLine($"Feed API error: {error}");
+                    throw new HttpRequestException($"Failed to load feed: {error}");
+                }
+
+                var content = await response.Content.ReadAsStringAsync();
+                Debug.WriteLine($"Feed API response content: {content}");
+                
+                var posts = JsonConvert.DeserializeObject<List<Post>>(content);
+                Debug.WriteLine($"Deserialized {posts?.Count ?? 0} posts");
+                return posts ?? new List<Post>();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"GetFeedAsync error: {ex}");
+                throw;
+            }
         }
 
         public async Task<Post> CreatePostAsync(string content, Stream? imageStream = null, string? fileName = null, double? latitude = null, double? longitude = null)
@@ -172,8 +236,7 @@ namespace ConnectHub.App.Services
             var response = await _httpClient.PostAsync($"/api/auth/logout/{userId}", null);
             if (response.IsSuccessStatusCode)
             {
-                _preferences.Remove("auth_token");
-                _httpClient.DefaultRequestHeaders.Authorization = null;
+                Token = null;
                 return true;
             }
             return false;

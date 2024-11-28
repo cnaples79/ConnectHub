@@ -28,9 +28,5 @@ namespace ConnectHub.Shared.Models
         public virtual User User { get; set; }
         public virtual ICollection<Comment> Comments { get; set; }
         public virtual ICollection<User> LikedBy { get; set; }
-
-        // Properties for UI state
-        public bool IsLiked { get; set; }
-        public int LikesCount { get; set; }
     }
 }

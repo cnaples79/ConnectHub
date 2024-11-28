@@ -1,51 +1,22 @@
 using Microsoft.Maui.Platform;
+using System.Diagnostics;
 
 namespace ConnectHub.App;
 
 public partial class App : Application
 {
-    public App()
+    public App(AppShell appShell)
     {
         try
         {
             InitializeComponent();
-            MainPage = new AppShell();
-            System.Diagnostics.Debug.WriteLine("App initialized successfully");
+            MainPage = appShell;
+            Debug.WriteLine("App initialized successfully");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"App initialization error: {ex}");
-            MainPage = new ContentPage
-            {
-                Content = new VerticalStackLayout
-                {
-                    Spacing = 10,
-                    Padding = new Thickness(20),
-                    Children =
-                    {
-                        new Label
-                        {
-                            Text = "An error occurred while starting the app:",
-                            HorizontalOptions = LayoutOptions.Center,
-                            VerticalOptions = LayoutOptions.Center
-                        },
-                        new Label
-                        {
-                            Text = ex.Message,
-                            HorizontalOptions = LayoutOptions.Center,
-                            VerticalOptions = LayoutOptions.Center,
-                            TextColor = Colors.Red
-                        },
-                        new Label
-                        {
-                            Text = ex.StackTrace ?? "",
-                            FontSize = 12,
-                            HorizontalOptions = LayoutOptions.Fill,
-                            LineBreakMode = LineBreakMode.WordWrap
-                        }
-                    }
-                }
-            };
+            Debug.WriteLine($"App initialization error: {ex}");
+            throw;
         }
     }
 

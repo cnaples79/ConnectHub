@@ -1,169 +1,79 @@
 using Microsoft.Maui.Controls;
 using ConnectHub.App.Views;
 using System.Diagnostics;
+using System;
+using System.Windows.Input;
+using System.Threading.Tasks;
+using ConnectHub.App.Services;
 
 namespace ConnectHub.App
 {
     public partial class AppShell : Shell
     {
         private readonly IPreferences _preferences;
+        
+        public ICommand LogoutCommand { get; }
 
-        public AppShell()
+        public AppShell(IPreferences preferences)
+        {
+            InitializeComponent();
+            _preferences = preferences;
+
+            // Register routes
+            Routing.RegisterRoute("login", typeof(LoginPage));
+            Routing.RegisterRoute("register", typeof(RegisterPage));
+            Routing.RegisterRoute("feed", typeof(FeedPage));
+            Routing.RegisterRoute("chat", typeof(ChatPage));
+            Routing.RegisterRoute("profile", typeof(ProfilePage));
+
+            LogoutCommand = new Command(async () => await HandleLogout());
+
+            // Check if user is logged in
+            var token = _preferences.Get("auth_token", string.Empty);
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                AuthenticationTabs.IsVisible = string.IsNullOrEmpty(token);
+                MainTabs.IsVisible = !string.IsNullOrEmpty(token);
+            });
+        }
+
+        private async Task HandleLogout()
         {
             try
             {
-                Debug.WriteLine("Initializing AppShell...");
-                InitializeComponent();
-                _preferences = Preferences.Default;
+                // Clear the token
+                _preferences.Remove("auth_token");
                 
-                Debug.WriteLine("Registering routes...");
-                RegisterRoutes();
-                
-                MainThread.BeginInvokeOnMainThread(() => 
+                // Reset the HttpClient in ApiService
+                var apiService = Handler.MauiContext.Services.GetService<IApiService>();
+                if (apiService != null)
                 {
-                    Debug.WriteLine("Checking initial authentication state...");
-                    CheckAuthenticationState();
-                });
-                
-                Debug.WriteLine("AppShell initialized successfully");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"AppShell initialization error: {ex}");
-#if DEBUG
-                throw;
-#endif
-            }
-        }
+                    apiService.Token = null;
+                }
 
-        private void RegisterRoutes()
-        {
-            try
-            {
-                Debug.WriteLine("Starting route registration...");
-                
-                Routing.RegisterRoute("login", typeof(LoginPage));
-                Routing.RegisterRoute("register", typeof(RegisterPage));
-                Routing.RegisterRoute("feed", typeof(FeedPage));
-                Routing.RegisterRoute("chat", typeof(ChatPage));
-                Routing.RegisterRoute("profile", typeof(ProfilePage));
-
-                Debug.WriteLine("Routes registered successfully");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Route registration error: {ex}");
-#if DEBUG
-                throw;
-#endif
-            }
-        }
-
-        public void ShowAuthenticationTabs()
-        {
-            try
-            {
-                Debug.WriteLine("ShowAuthenticationTabs called");
+                // Update UI
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    Debug.WriteLine("Setting tab visibility - Auth:true, Main:false");
-                    MainTabs.IsVisible = false;
                     AuthenticationTabs.IsVisible = true;
-                    
-                    Debug.WriteLine("Attempting navigation to login...");
-                    Current.GoToAsync("//login").ContinueWith(t =>
-                    {
-                        if (t.Exception != null)
-                            Debug.WriteLine($"Navigation to login failed: {t.Exception}");
-                        else
-                            Debug.WriteLine("Navigation to login completed");
-                    });
+                    MainTabs.IsVisible = false;
                 });
+
+                await Shell.Current.GoToAsync("//login");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"ShowAuthenticationTabs error: {ex}");
+                Debug.WriteLine($"Logout error: {ex}");
+                await Shell.Current.DisplayAlert("Error", "Failed to logout", "OK");
             }
         }
 
         public void ShowMainTabs()
         {
-            try
+            MainThread.BeginInvokeOnMainThread(() =>
             {
-                Debug.WriteLine("ShowMainTabs called");
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    try
-                    {
-                        Debug.WriteLine("Setting tab visibility - Auth:false, Main:true");
-                        AuthenticationTabs.IsVisible = false;
-                        MainTabs.IsVisible = true;
-
-                        Debug.WriteLine($"MainTabs.Items count: {MainTabs.Items.Count}");
-                        var firstItem = MainTabs.Items.FirstOrDefault();
-                        Debug.WriteLine($"First tab type: {firstItem?.GetType().Name}");
-
-                        if (firstItem is ShellSection feedSection)
-                        {
-                            Debug.WriteLine($"FeedSection.Items count: {feedSection.Items.Count}");
-                            var firstContent = feedSection.Items.FirstOrDefault();
-                            Debug.WriteLine($"First content type: {firstContent?.GetType().Name}");
-
-                            if (firstContent is ShellContent feedContent)
-                            {
-                                Debug.WriteLine("Creating feed content...");
-                                var content = feedContent.ContentTemplate.CreateContent();
-                                Debug.WriteLine($"Feed content created: {content?.GetType().Name}");
-                            }
-                            else
-                            {
-                                Debug.WriteLine("First content is not ShellContent");
-                            }
-                        }
-                        else
-                        {
-                            Debug.WriteLine("First item is not ShellSection");
-                        }
-                        
-                        Debug.WriteLine("Main tabs shown successfully");
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"Error showing main tabs: {ex}");
-                        throw;
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"ShowMainTabs error: {ex}");
-            }
-        }
-
-        private void CheckAuthenticationState()
-        {
-            try
-            {
-                Debug.WriteLine("Checking authentication state");
-                var token = _preferences?.Get("auth_token", string.Empty);
-                Debug.WriteLine($"Token exists: {!string.IsNullOrEmpty(token)}");
-                
-                if (string.IsNullOrEmpty(token))
-                {
-                    Debug.WriteLine("No token found, showing authentication tabs");
-                    ShowAuthenticationTabs();
-                }
-                else
-                {
-                    Debug.WriteLine("Token found, showing main tabs");
-                    ShowMainTabs();
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"CheckAuthenticationState error: {ex}");
-                ShowAuthenticationTabs(); // Default to authentication tabs on error
-            }
+                AuthenticationTabs.IsVisible = false;
+                MainTabs.IsVisible = true;
+            });
         }
 
         protected override void OnNavigating(ShellNavigatingEventArgs args)

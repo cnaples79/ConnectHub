@@ -12,6 +12,10 @@
 		<data>
 		h91pPlaLa/zGvKvTG042lwXO31A=
 		</data>
+		<key>Resources/MauiInfo.plist</key>
+		<data>
+		iEtuUGCV6JM3gxS/pO33swhmpp8=
+		</data>
 		<key>Resources/MonoTouchDebugConfiguration.txt</key>
 		<data>
 		oowkf1sL6T19nanXUObgmuayWqM=
@@ -54,28 +58,28 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			XRQ4WqNtl7MiaP4ZQ/a6Rd4CWshAXmtSdxgXYGs5riI=
+			U8Ekvaaev3prGCnqFm4Bzb/ycWM90s7T/yYn1EUj+nc=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.App.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			mBOGWsM081RUFWzME0s0npMoZuu55aasbr1HOdGyBeQ=
+			b2ruDgmMpo5EJIEm/b/MRJySa68PXh/Esxmfp51ABUA=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.Shared.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			oq6sJrQ3IkUYUsf15gwvLOTeo9Kunc66I/K36ETnJsY=
+			iHWVZeQe9Vl6uMwkJDTKa/9Qj/ChSokQJzjUOKQgtK0=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.Shared.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			4d5r8Y0GUO2+qJNxxRf+xROmbt06eKs7dKp7BppOY4w=
+			bl4Ce69sl4FmmxMVYj8jIFg/Gcft4AlSDd2x6RtRKFM=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.AspNetCore.Connections.Abstractions.dll</key>
@@ -271,7 +275,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			g1mf32s4ciLsN9AwCEPlllaVdMpbVPK4js3Rke15ycY=
+			GMZU+GC94GmLZ9bRjM+5Eyyun1Po0MYj7krY8k1A5j4=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.Maui.Graphics.dll</key>
@@ -544,14 +548,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			5bqeL18CsnMaUDzF91S/Z31bDWc5lEvOlJZEpsA/hic=
+			asW0PsW6QCyJwbvWYR3SIVbhVG9AGdvcZr9waMKDs/E=
 			</data>
 		</dict>
 		<key>MonoBundle/System.Private.CoreLib.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			ClMnIxAC9DcJhJTcobx2TWiziyWkV3qiP9w+vyTBMHM=
+			YvwLcZAJt0UcEbZJOJmft7sv4iBeeM2lLPZN13ljN+k=
 			</data>
 		</dict>
 		<key>MonoBundle/System.Private.Uri.dll</key>
@@ -628,7 +632,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			EunIuTTZsrfftgduY+FWifLyKL9uGeJeilnkVKPFm4s=
+			7TfQrQmFTG4DVAcDkTJpKccuVzpU9b2fKyE4hzfBaUU=
 			</data>
 		</dict>
 		<key>MonoBundle/System.Security.Claims.dll</key>
@@ -1028,6 +1032,13 @@
 			<key>hash2</key>
 			<data>
 			TZHAFFvPl2pd6rKJinEc+wWiqiBjo2OkG9foDZMBNRs=
+			</data>
+		</dict>
+		<key>Resources/MauiInfo.plist</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			tx0KXqEC+DvcCGyogQTEQWHcCWJYYqH24NtPwhpQEjo=
 			</data>
 		</dict>
 		<key>Resources/MonoTouchDebugConfiguration.txt</key>

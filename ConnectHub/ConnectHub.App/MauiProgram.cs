@@ -25,28 +25,29 @@ public static class MauiProgram
         });
 
         // Register Services
+        builder.Services.AddSingleton<IPreferences>(Preferences.Default);
         builder.Services.AddSingleton<IApiService, ApiService>();
         builder.Services.AddSingleton<INavigationService, NavigationService>();
-        builder.Services.AddSingleton<IPreferences>(Preferences.Default);
 
         // Register converters
         builder.Services.AddSingleton<BooleanToObjectConverter>();
 
-        // Register Views and ViewModels
-        builder.Services.AddTransient<LoginPage>();
+        // Register ViewModels
         builder.Services.AddTransient<LoginViewModel>();
-        
-        builder.Services.AddTransient<RegisterPage>();
         builder.Services.AddTransient<RegisterViewModel>();
-        
-        builder.Services.AddTransient<FeedPage>();
         builder.Services.AddTransient<FeedViewModel>();
-        
-        builder.Services.AddTransient<ChatPage>();
         builder.Services.AddTransient<ChatViewModel>();
-        
-        builder.Services.AddTransient<ProfilePage>();
         builder.Services.AddTransient<ProfileViewModel>();
+        
+        // Register Views
+        builder.Services.AddTransient<LoginPage>();
+        builder.Services.AddTransient<RegisterPage>();
+        builder.Services.AddTransient<FeedPage>();
+        builder.Services.AddTransient<ChatPage>();
+        builder.Services.AddTransient<ProfilePage>();
+        
+        // Register AppShell
+        builder.Services.AddSingleton<AppShell>();
 
 #if DEBUG
         builder.Logging.AddDebug().SetMinimumLevel(LogLevel.Trace);
