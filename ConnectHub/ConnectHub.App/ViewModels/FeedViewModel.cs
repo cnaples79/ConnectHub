@@ -158,7 +158,7 @@ public partial class FeedViewModel : BaseViewModel
         try
         {
             IsBusy = true;
-            await _navigationService.NavigateToAsync("post/create");
+            await Shell.Current.GoToAsync("post/create");
         }
         catch (Exception ex)
         {
@@ -179,7 +179,12 @@ public partial class FeedViewModel : BaseViewModel
         try
         {
             IsBusy = true;
-            await Shell.Current.GoToAsync("//profile");
+            await Shell.Current.GoToAsync("//main/profile");
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Error", "Failed to open profile", "OK");
+            System.Diagnostics.Debug.WriteLine($"Profile navigation error: {ex}");
         }
         finally
         {
@@ -195,7 +200,12 @@ public partial class FeedViewModel : BaseViewModel
         try
         {
             IsBusy = true;
-            await Shell.Current.GoToAsync("//chat");
+            await Shell.Current.GoToAsync("//main/chat");
+        }
+        catch (Exception ex)
+        {
+            await Shell.Current.DisplayAlert("Error", "Failed to open chat", "OK");
+            System.Diagnostics.Debug.WriteLine($"Chat navigation error: {ex}");
         }
         finally
         {

@@ -12,7 +12,8 @@ namespace ConnectHub.App.Services
         Task<Post> CreatePostAsync(string content, Stream? imageStream = null, string? fileName = null, double? latitude = null, double? longitude = null);
         Task<bool> LikePostAsync(int postId);
         Task<bool> UnlikePostAsync(int postId);
-        Task<Post> AddCommentAsync(int postId, string content);
+        Task<List<Comment>> GetCommentsAsync(int postId);
+        Task<Comment> AddCommentAsync(int postId, string content);
         Task<List<Post>> SearchPostsAsync(string query);
         Task<List<Post>> GetNearbyPostsAsync(double latitude, double longitude);
         Task<List<ChatMessage>> GetChatHistoryAsync(int userId);

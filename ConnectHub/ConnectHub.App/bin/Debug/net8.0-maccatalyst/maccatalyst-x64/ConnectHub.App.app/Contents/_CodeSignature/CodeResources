@@ -51,35 +51,35 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			lk6hMOssQJvmMIft8XACW5WJjdCGyoOGLG7WbVjGLdA=
+			9vyzOPifOd2oUiKEbAVQTUL9WcMEBjM4iJ8Vmvwi+g0=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.App.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			U8Ekvaaev3prGCnqFm4Bzb/ycWM90s7T/yYn1EUj+nc=
+			3yjq4+M2StL94QNAFkGBOGZ1HFXzXSdxXzXPp9/Ospo=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.App.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			b2ruDgmMpo5EJIEm/b/MRJySa68PXh/Esxmfp51ABUA=
+			UASvhvSNI0TSTgymlMrvK3BI6wUjakvx1lshzPXnI/g=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.Shared.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			iHWVZeQe9Vl6uMwkJDTKa/9Qj/ChSokQJzjUOKQgtK0=
+			IRgujiECZYcfyurHRQaRnLKPzRnL3b7lozhS/fL0vMA=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.Shared.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			bl4Ce69sl4FmmxMVYj8jIFg/Gcft4AlSDd2x6RtRKFM=
+			1Cnn0XpEV3QknkeYgeVcVjmJv7HYp+3BzqVpHqAHHTg=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.AspNetCore.Connections.Abstractions.dll</key>

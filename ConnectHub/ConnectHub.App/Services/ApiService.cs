@@ -198,11 +198,40 @@ namespace ConnectHub.App.Services
             return response.IsSuccessStatusCode;
         }
 
-        public async Task<Post> AddCommentAsync(int postId, string content)
+        public async Task<List<Comment>> GetCommentsAsync(int postId)
         {
-            var response = await _httpClient.PostAsJsonAsync($"/api/posts/{postId}/comments", new { content });
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<Post>();
+            try
+            {
+                var response = await _httpClient.GetAsync($"/api/post/{postId}/comments");
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<List<Comment>>() ?? new List<Comment>();
+                }
+                throw new HttpRequestException($"Error getting comments: {response.StatusCode}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error getting comments: {ex}");
+                throw;
+            }
+        }
+
+        public async Task<Comment> AddCommentAsync(int postId, string content)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync($"/api/post/{postId}/comments", new { Content = content });
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<Comment>();
+                }
+                throw new HttpRequestException($"Error adding comment: {response.StatusCode}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error adding comment: {ex}");
+                throw;
+            }
         }
 
         public async Task<List<ChatMessage>> GetChatHistoryAsync(int userId)

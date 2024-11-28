@@ -58,6 +58,12 @@ build_metadata.AdditionalFiles.ManifestResourceName = ConnectHub.App.Views.ChatP
 build_metadata.AdditionalFiles.TargetPath = Views/ChatPage.xaml
 build_metadata.AdditionalFiles.RelativePath = Views/ChatPage.xaml
 
+[/Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/Views/CommentsPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = ConnectHub.App.Views.CommentsPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views/CommentsPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views/CommentsPage.xaml
+
 [/Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/Views/FeedPage.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = ConnectHub.App.Views.FeedPage.xaml
@@ -69,6 +75,12 @@ build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = ConnectHub.App.Views.LoginPage.xaml
 build_metadata.AdditionalFiles.TargetPath = Views/LoginPage.xaml
 build_metadata.AdditionalFiles.RelativePath = Views/LoginPage.xaml
+
+[/Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/Views/NewPostPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = ConnectHub.App.Views.NewPostPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Views/NewPostPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Views/NewPostPage.xaml
 
 [/Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/Views/ProfilePage.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml

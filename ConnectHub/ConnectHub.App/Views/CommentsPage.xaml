@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="ConnectHub.App.Views.CommentsPage"
+             Title="Comments">
+    <Grid RowDefinitions="*, Auto" Padding="20">
+        <CollectionView ItemsSource="{Binding Comments}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame Margin="0,5" Padding="10">
+                        <StackLayout>
+                            <Label Text="{Binding UserName}" FontAttributes="Bold"/>
+                            <Label Text="{Binding Content}"/>
+                            <Label Text="{Binding CreatedAt}" FontSize="Small" TextColor="Gray"/>
+                        </StackLayout>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        
+        <StackLayout Grid.Row="1" Orientation="Horizontal" Spacing="10">
+            <Entry Placeholder="Add a comment..."
+                   Text="{Binding NewComment}"
+                   HorizontalOptions="FillAndExpand"/>
+            <Button Text="Send"
+                    Command="{Binding AddCommentCommand}"
+                    IsEnabled="{Binding IsNotBusy}"/>
+        </StackLayout>
+    </Grid>
+</ContentPage>

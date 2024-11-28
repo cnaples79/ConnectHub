@@ -11,6 +11,7 @@ namespace ConnectHub.App
     public partial class AppShell : Shell
     {
         private readonly IPreferences _preferences;
+        private ToolbarItem _logoutButton;
         
         public ICommand LogoutCommand { get; }
 
@@ -20,21 +21,42 @@ namespace ConnectHub.App
             _preferences = preferences;
 
             // Register routes
+            RegisterRoutes();
+
+            LogoutCommand = new Command(async () => await HandleLogout());
+
+            // Store reference to logout button
+            _logoutButton = ToolbarItems.FirstOrDefault(item => item.Text == "Logout");
+
+            // Set initial state
+            var token = _preferences.Get<string>("auth_token", string.Empty);
+            if (!string.IsNullOrEmpty(token))
+            {
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    await Current.GoToAsync("//main/feed");
+                    UpdateUIState(true);
+                });
+            }
+            else
+            {
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    await Current.GoToAsync("//authentication/login");
+                    UpdateUIState(false);
+                });
+            }
+        }
+
+        private void RegisterRoutes()
+        {
             Routing.RegisterRoute("login", typeof(LoginPage));
             Routing.RegisterRoute("register", typeof(RegisterPage));
             Routing.RegisterRoute("feed", typeof(FeedPage));
             Routing.RegisterRoute("chat", typeof(ChatPage));
             Routing.RegisterRoute("profile", typeof(ProfilePage));
-
-            LogoutCommand = new Command(async () => await HandleLogout());
-
-            // Check if user is logged in
-            var token = _preferences.Get("auth_token", string.Empty);
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                AuthenticationTabs.IsVisible = string.IsNullOrEmpty(token);
-                MainTabs.IsVisible = !string.IsNullOrEmpty(token);
-            });
+            Routing.RegisterRoute("post/create", typeof(NewPostPage));
+            Routing.RegisterRoute("post/comments", typeof(CommentsPage));
         }
 
         private async Task HandleLogout()
@@ -51,41 +73,40 @@ namespace ConnectHub.App
                     apiService.Token = null;
                 }
 
-                // Update UI
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    AuthenticationTabs.IsVisible = true;
-                    MainTabs.IsVisible = false;
-                });
-
-                await Shell.Current.GoToAsync("//login");
+                // Update UI and navigate
+                UpdateUIState(false);
+                await Current.GoToAsync("//authentication/login");
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Logout error: {ex}");
-                await Shell.Current.DisplayAlert("Error", "Failed to logout", "OK");
+                await Current.DisplayAlert("Error", "Failed to logout", "OK");
             }
         }
 
-        public void ShowMainTabs()
+        private void UpdateUIState(bool isLoggedIn)
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                AuthenticationTabs.IsVisible = false;
-                MainTabs.IsVisible = true;
+                if (isLoggedIn)
+                {
+                    Current.CurrentItem = MainTabs;
+                    if (!ToolbarItems.Contains(_logoutButton))
+                        ToolbarItems.Add(_logoutButton);
+                }
+                else
+                {
+                    Current.CurrentItem = AuthenticationTabs;
+                    if (ToolbarItems.Contains(_logoutButton))
+                        ToolbarItems.Remove(_logoutButton);
+                }
             });
         }
 
-        protected override void OnNavigating(ShellNavigatingEventArgs args)
+        public async Task ShowMainTabs()
         {
-            base.OnNavigating(args);
-            Debug.WriteLine($"OnNavigating - Source: {args.Current?.Location?.OriginalString ?? "null"}, Target: {args.Target?.Location?.OriginalString ?? "null"}");
-        }
-
-        protected override void OnNavigated(ShellNavigatedEventArgs args)
-        {
-            base.OnNavigated(args);
-            Debug.WriteLine($"OnNavigated - Current: {args.Current?.Location?.OriginalString ?? "null"}, Previous: {args.Previous?.Location?.OriginalString ?? "null"}");
+            UpdateUIState(true);
+            await Current.GoToAsync("//main/feed");
         }
     }
 }

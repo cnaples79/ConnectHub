@@ -38,6 +38,8 @@ public static class MauiProgram
         builder.Services.AddTransient<FeedViewModel>();
         builder.Services.AddTransient<ChatViewModel>();
         builder.Services.AddTransient<ProfileViewModel>();
+        builder.Services.AddTransient<NewPostViewModel>();
+        builder.Services.AddTransient<CommentsViewModel>();
         
         // Register Views
         builder.Services.AddTransient<LoginPage>();
@@ -45,6 +47,8 @@ public static class MauiProgram
         builder.Services.AddTransient<FeedPage>();
         builder.Services.AddTransient<ChatPage>();
         builder.Services.AddTransient<ProfilePage>();
+        builder.Services.AddTransient<NewPostPage>();
+        builder.Services.AddTransient<CommentsPage>();
         
         // Register AppShell
         builder.Services.AddSingleton<AppShell>();
