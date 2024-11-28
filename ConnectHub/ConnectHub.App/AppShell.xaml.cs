@@ -13,61 +13,108 @@ namespace ConnectHub.App
         private readonly IPreferences _preferences;
         private readonly IApiService _apiService;
         private readonly ToolbarItem _logoutButton;
-        
-        public ICommand LogoutCommand { get; }
 
         public AppShell(IPreferences preferences, IApiService apiService)
         {
-            InitializeComponent();
-            _preferences = preferences;
-            _apiService = apiService;
-            BindingContext = this;
-
-            // Create logout button
-            _logoutButton = new ToolbarItem
+            try
             {
-                Text = "Logout",
-                Command = new Command(async () => await HandleLogout()),
-                Order = ToolbarItemOrder.Primary,
-                Priority = 0
-            };
+                InitializeComponent();
+                _preferences = preferences;
+                _apiService = apiService;
 
-            // Register routes
-            RegisterRoutes();
+                Debug.WriteLine("Initializing AppShell...");
 
-            // Set initial state
-            var token = _preferences.Get<string>("auth_token", string.Empty);
-            if (!string.IsNullOrEmpty(token))
-            {
-                MainThread.BeginInvokeOnMainThread(async () =>
+                // Create logout button
+                _logoutButton = new ToolbarItem
                 {
-                    await Current.GoToAsync("//main/feed");
-                    UpdateUIState(true);
-                });
-            }
-            else
-            {
-                MainThread.BeginInvokeOnMainThread(async () =>
-                {
-                    await Current.GoToAsync("//authentication/login");
-                    UpdateUIState(false);
-                });
-            }
+                    Text = "Logout",
+                    Command = new Command(async () => await HandleLogout()),
+                    Order = ToolbarItemOrder.Primary,
+                    Priority = 0
+                };
 
-            Debug.WriteLine("AppShell initialized");
+                // Register routes
+                RegisterRoutes();
+
+                // Set initial state based on token
+                var token = _preferences.Get<string>("auth_token", string.Empty);
+                Debug.WriteLine($"Initial token: {token?.Substring(0, Math.Min(10, token?.Length ?? 0))}...");
+
+                if (!string.IsNullOrEmpty(token))
+                {
+                    Debug.WriteLine("Token found, setting up authenticated state");
+                    _apiService.Token = token;
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        try
+                        {
+                            UpdateUIState(true);
+                            Current.GoToAsync("//main/feed").ContinueWith(t =>
+                            {
+                                if (t.IsFaulted)
+                                {
+                                    Debug.WriteLine($"Navigation failed: {t.Exception}");
+                                }
+                            });
+                            Debug.WriteLine("Navigated to feed page");
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"Error during navigation: {ex}");
+                        }
+                    });
+                }
+                else
+                {
+                    Debug.WriteLine("No token found, setting up unauthenticated state");
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        try
+                        {
+                            UpdateUIState(false);
+                            Current.GoToAsync("//authentication/login").ContinueWith(t =>
+                            {
+                                if (t.IsFaulted)
+                                {
+                                    Debug.WriteLine($"Navigation failed: {t.Exception}");
+                                }
+                            });
+                            Debug.WriteLine("Navigated to login page");
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"Error during navigation: {ex}");
+                        }
+                    });
+                }
+
+                Debug.WriteLine("AppShell initialization completed");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error initializing AppShell: {ex}");
+                throw;
+            }
         }
 
         private void RegisterRoutes()
         {
-            Routing.RegisterRoute("login", typeof(LoginPage));
-            Routing.RegisterRoute("register", typeof(RegisterPage));
-            Routing.RegisterRoute("feed", typeof(FeedPage));
-            Routing.RegisterRoute("chat", typeof(ChatPage));
-            Routing.RegisterRoute("profile", typeof(ProfilePage));
-            Routing.RegisterRoute("post/create", typeof(NewPostPage));
-            Routing.RegisterRoute("post/comments", typeof(CommentsPage));
-            
-            Debug.WriteLine("Routes registered");
+            try
+            {
+                Routing.RegisterRoute("login", typeof(LoginPage));
+                Routing.RegisterRoute("register", typeof(RegisterPage));
+                Routing.RegisterRoute("feed", typeof(FeedPage));
+                Routing.RegisterRoute("chat", typeof(ChatPage));
+                Routing.RegisterRoute("profile", typeof(ProfilePage));
+                Routing.RegisterRoute("post/create", typeof(NewPostPage));
+                Routing.RegisterRoute("post/comments", typeof(CommentsPage));
+                Debug.WriteLine("Routes registered successfully");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error registering routes: {ex}");
+                throw;
+            }
         }
 
         private async Task HandleLogout()
@@ -90,8 +137,8 @@ namespace ConnectHub.App
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Logout error: {ex}");
-                await Current.DisplayAlert("Error", "Failed to logout", "OK");
+                Debug.WriteLine($"Error during logout: {ex}");
+                await DisplayAlert("Error", "Failed to logout", "OK");
             }
         }
 
@@ -99,23 +146,35 @@ namespace ConnectHub.App
         {
             try
             {
+                Debug.WriteLine($"Updating UI state, isLoggedIn: {isLoggedIn}");
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    if (isLoggedIn)
+                    try
                     {
-                        if (!ToolbarItems.Contains(_logoutButton))
+                        if (isLoggedIn)
                         {
-                            ToolbarItems.Add(_logoutButton);
-                            Debug.WriteLine("Logout button added to toolbar");
+                            if (!ToolbarItems.Contains(_logoutButton))
+                            {
+                                ToolbarItems.Add(_logoutButton);
+                                Debug.WriteLine("Added logout button to toolbar");
+                            }
+                            Current.CurrentItem = MainTabs;
+                            Debug.WriteLine("Set current item to MainTabs");
+                        }
+                        else
+                        {
+                            if (ToolbarItems.Contains(_logoutButton))
+                            {
+                                ToolbarItems.Remove(_logoutButton);
+                                Debug.WriteLine("Removed logout button from toolbar");
+                            }
+                            Current.CurrentItem = AuthenticationTabs;
+                            Debug.WriteLine("Set current item to AuthenticationTabs");
                         }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        if (ToolbarItems.Contains(_logoutButton))
-                        {
-                            ToolbarItems.Remove(_logoutButton);
-                            Debug.WriteLine("Logout button removed from toolbar");
-                        }
+                        Debug.WriteLine($"Error in UI update: {ex}");
                     }
                 });
             }
@@ -125,11 +184,16 @@ namespace ConnectHub.App
             }
         }
 
-        public async Task ShowMainTabs()
+        public void ShowLogoutButton()
         {
-            Debug.WriteLine("Showing main tabs...");
+            Debug.WriteLine("ShowLogoutButton called");
             UpdateUIState(true);
-            await Current.GoToAsync("//main/feed");
+        }
+
+        public void HideLogoutButton()
+        {
+            Debug.WriteLine("HideLogoutButton called");
+            UpdateUIState(false);
         }
     }
 }

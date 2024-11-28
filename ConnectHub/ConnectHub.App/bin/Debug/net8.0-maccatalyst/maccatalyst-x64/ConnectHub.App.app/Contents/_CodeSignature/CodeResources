@@ -10,7 +10,7 @@
 		</data>
 		<key>Resources/Assets.car</key>
 		<data>
-		nXKwqmOMKePj/WWJfwuw2PWplSM=
+		kY7WVvZHxxqOGghP3vwlgafXmX4=
 		</data>
 		<key>Resources/MauiInfo.plist</key>
 		<data>
@@ -58,28 +58,28 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			0iZ/7PkmOXLM4WRsId1Di3QIUwQGaYVM17RwBtnCzqQ=
+			FDI7Ua14IwrEPoOWFs60wI9lGKTWKrOMl3usTmnBk5k=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.App.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			3HVk5HwIUGxGjVW9JJam41ZJRiE8QL6hxA3+d7Rh1ug=
+			S32ei3sZ4GbC7bQxqTiENxsBKgueHVXuVUMK9iI+iNY=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.Shared.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			v2a6soMxBEc1xZfEs+2RHHLpSOQi5OzTTvatyq1N2Yw=
+			+Agu+bG7CjCsTwPhnmQwsXj/47HWqoHETrJvmDHdGYI=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.Shared.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			YCFgm/S0+h/eUSS/8k2PFY430fmKoHlBORF+6BmwDSo=
+			wUy2yR65OO5xoRrBINlLeI98bi0+YPczibfEGnzgmGc=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.AspNetCore.Connections.Abstractions.dll</key>
@@ -457,7 +457,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			WqYXCOJKJcGMturqhw96OWLiLdyBQNwrx6zzsiOwiJU=
+			XhU8A28DO8lL+vbSm/INGjorawd6NJscsz7RxRODf90=
 			</data>
 		</dict>
 		<key>MonoBundle/System.Net.NameResolution.dll</key>
@@ -548,14 +548,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			asW0PsW6QCyJwbvWYR3SIVbhVG9AGdvcZr9waMKDs/E=
+			5bqeL18CsnMaUDzF91S/Z31bDWc5lEvOlJZEpsA/hic=
 			</data>
 		</dict>
 		<key>MonoBundle/System.Private.CoreLib.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			YvwLcZAJt0UcEbZJOJmft7sv4iBeeM2lLPZN13ljN+k=
+			ClMnIxAC9DcJhJTcobx2TWiziyWkV3qiP9w+vyTBMHM=
 			</data>
 		</dict>
 		<key>MonoBundle/System.Private.Uri.dll</key>
@@ -1031,7 +1031,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			O5IQBl5HqQtC8bsVRF/ML9Ajezrtwb1JReotng0tg4I=
+			WcyBHty90vbZuBACzyu+QplAvYhB8LkatTa6ny/gSfA=
 			</data>
 		</dict>
 		<key>Resources/MauiInfo.plist</key>

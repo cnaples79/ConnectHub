@@ -21,10 +21,6 @@
         </ResourceDictionary>
     </Shell.Resources>
 
-    <Shell.ToolbarItems>
-        <ToolbarItem Text="Logout" Command="{Binding LogoutCommand}"/>
-    </Shell.ToolbarItems>
-
     <TabBar x:Name="AuthenticationTabs" Route="authentication">
         <ShellContent
             Title="Login"

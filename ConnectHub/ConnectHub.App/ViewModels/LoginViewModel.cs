@@ -60,10 +60,12 @@ namespace ConnectHub.App.ViewModels
                 if (!string.IsNullOrEmpty(token))
                 {
                     Preferences.Default.Set("auth_token", token);
+                    _apiService.Token = token;
 
                     if (Application.Current?.MainPage is AppShell appShell)
                     {
-                        await appShell.ShowMainTabs();
+                        appShell.ShowLogoutButton();
+                        await Shell.Current.GoToAsync("//main/feed");
                     }
                     else
                     {
@@ -77,10 +79,12 @@ namespace ConnectHub.App.ViewModels
             }
             catch (HttpRequestException ex)
             {
+                Debug.WriteLine($"Login HTTP error: {ex}");
                 await Application.Current.MainPage.DisplayAlert("Error", "Login failed. Please check your credentials and try again.", "OK");
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"Login error: {ex}");
                 await Application.Current.MainPage.DisplayAlert("Error", "An unexpected error occurred", "OK");
             }
             finally

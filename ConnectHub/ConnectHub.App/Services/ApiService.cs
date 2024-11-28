@@ -170,36 +170,62 @@ namespace ConnectHub.App.Services
             try
             {
                 Debug.WriteLine($"Creating post with content: {content}");
+                Debug.WriteLine($"Current token: {Token?.Substring(0, Math.Min(10, Token?.Length ?? 0))}...");
+                Debug.WriteLine($"Authorization header: {_httpClient.DefaultRequestHeaders.Authorization?.ToString() ?? "null"}");
 
                 if (string.IsNullOrEmpty(Token))
                 {
+                    Debug.WriteLine("No token available");
                     throw new UnauthorizedAccessException("No authentication token available");
                 }
 
-                var postData = new { content = content };
-                var json = JsonConvert.SerializeObject(postData);
-                var stringContent = new StringContent(json, Encoding.UTF8);
-                stringContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                var formData = new MultipartFormDataContent();
+                formData.Add(new StringContent(content), "Content");
+                Debug.WriteLine("Added content to form data");
 
-                var response = await _httpClient.PostAsync("/api/post", stringContent);
+                if (latitude.HasValue)
+                {
+                    formData.Add(new StringContent(latitude.Value.ToString()), "Latitude");
+                    Debug.WriteLine($"Added latitude: {latitude.Value}");
+                }
+
+                if (longitude.HasValue)
+                {
+                    formData.Add(new StringContent(longitude.Value.ToString()), "Longitude");
+                    Debug.WriteLine($"Added longitude: {longitude.Value}");
+                }
+
+                if (imageStream != null && !string.IsNullOrEmpty(fileName))
+                {
+                    var imageContent = new StreamContent(imageStream);
+                    imageContent.Headers.ContentType = new MediaTypeHeaderValue(GetMimeType(fileName));
+                    formData.Add(imageContent, "Image", fileName);
+                    Debug.WriteLine($"Added image: {fileName}");
+                }
+
+                Debug.WriteLine("Sending request to /api/post");
+                var response = await _httpClient.PostAsync("/api/post", formData);
                 
-                Debug.WriteLine($"Post creation response status: {response.StatusCode}");
+                Debug.WriteLine($"Response status code: {response.StatusCode}");
+                Debug.WriteLine($"Response headers: {string.Join(", ", response.Headers.Select(h => $"{h.Key}: {string.Join(", ", h.Value)}"))}");
                 
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Debug.WriteLine($"Response content: {responseContent}");
+
                 if (response.IsSuccessStatusCode)
                 {
                     Debug.WriteLine("Post created successfully");
-                    var responseContent = await response.Content.ReadAsStringAsync();
                     var post = JsonConvert.DeserializeObject<Post>(responseContent);
                     if (post == null)
                     {
+                        Debug.WriteLine("Failed to deserialize response");
                         throw new HttpRequestException("Invalid response from server");
                     }
                     return post;
                 }
                 
-                var errorContent = await response.Content.ReadAsStringAsync();
-                Debug.WriteLine($"Post creation failed. Error: {errorContent}");
-                throw new Exception($"Failed to create post. Status: {response.StatusCode}, Error: {errorContent}");
+                Debug.WriteLine($"Post creation failed. Status: {response.StatusCode}, Error: {responseContent}");
+                throw new Exception($"Failed to create post. Status: {response.StatusCode}, Error: {responseContent}");
             }
             catch (Exception ex)
             {
