@@ -165,25 +165,45 @@ namespace ConnectHub.App.Services
 
         public async Task<Post> CreatePostAsync(string content, Stream? imageStream = null, string? fileName = null, double? latitude = null, double? longitude = null)
         {
-            using var form = new MultipartFormDataContent();
-            form.Add(new StringContent(content), "content");
-            
-            if (latitude.HasValue)
-                form.Add(new StringContent(latitude.Value.ToString()), "latitude");
-            
-            if (longitude.HasValue)
-                form.Add(new StringContent(longitude.Value.ToString()), "longitude");
-
-            if (imageStream != null && fileName != null)
+            try
             {
-                var imageContent = new StreamContent(imageStream);
-                imageContent.Headers.ContentType = new MediaTypeHeaderValue(GetMimeType(fileName));
-                form.Add(imageContent, "image", fileName);
-            }
+                using var form = new MultipartFormDataContent();
+                form.Add(new StringContent(content), "content");
+                
+                if (latitude.HasValue)
+                    form.Add(new StringContent(latitude.Value.ToString()), "latitude");
+                
+                if (longitude.HasValue)
+                    form.Add(new StringContent(longitude.Value.ToString()), "longitude");
 
-            var response = await _httpClient.PostAsync("/api/post", form);
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<Post>();
+                if (imageStream != null && fileName != null)
+                {
+                    var imageContent = new StreamContent(imageStream);
+                    imageContent.Headers.ContentType = new MediaTypeHeaderValue(GetMimeType(fileName));
+                    form.Add(imageContent, "image", fileName);
+                }
+
+                var response = await _httpClient.PostAsync("/api/post", form);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Debug.WriteLine($"Create post error: {errorContent}");
+                    throw new HttpRequestException($"Failed to create post: {errorContent}");
+                }
+                
+                var post = await response.Content.ReadFromJsonAsync<Post>();
+                if (post == null)
+                {
+                    throw new HttpRequestException("Invalid response from server");
+                }
+                return post;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"CreatePostAsync error: {ex}");
+                throw;
+            }
         }
 
         public async Task<bool> LikePostAsync(int postId)

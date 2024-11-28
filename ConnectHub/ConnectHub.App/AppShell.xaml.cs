@@ -11,7 +11,7 @@ namespace ConnectHub.App
     public partial class AppShell : Shell
     {
         private readonly IPreferences _preferences;
-        private ToolbarItem _logoutButton;
+        private readonly ToolbarItem _logoutButton;
         
         public ICommand LogoutCommand { get; }
 
@@ -21,17 +21,17 @@ namespace ConnectHub.App
             _preferences = preferences;
             BindingContext = this;
 
-            // Register routes
-            RegisterRoutes();
-
-            LogoutCommand = new Command(async () => await HandleLogout());
-
-            // Store reference to logout button
+            // Create logout button
             _logoutButton = new ToolbarItem
             {
                 Text = "Logout",
-                Command = LogoutCommand
+                Command = new Command(async () => await HandleLogout()),
+                Order = ToolbarItemOrder.Primary,
+                Priority = 0
             };
+
+            // Register routes
+            RegisterRoutes();
 
             // Set initial state
             var token = _preferences.Get<string>("auth_token", string.Empty);
@@ -93,17 +93,24 @@ namespace ConnectHub.App
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                if (isLoggedIn)
+                try
                 {
-                    Current.CurrentItem = MainTabs;
-                    if (!ToolbarItems.Contains(_logoutButton))
-                        ToolbarItems.Add(_logoutButton);
+                    if (isLoggedIn)
+                    {
+                        Current.CurrentItem = MainTabs;
+                        if (!ToolbarItems.Contains(_logoutButton))
+                            ToolbarItems.Add(_logoutButton);
+                    }
+                    else
+                    {
+                        Current.CurrentItem = AuthenticationTabs;
+                        if (ToolbarItems.Contains(_logoutButton))
+                            ToolbarItems.Remove(_logoutButton);
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    Current.CurrentItem = AuthenticationTabs;
-                    if (ToolbarItems.Contains(_logoutButton))
-                        ToolbarItems.Remove(_logoutButton);
+                    Debug.WriteLine($"Error updating UI state: {ex}");
                 }
             });
         }
