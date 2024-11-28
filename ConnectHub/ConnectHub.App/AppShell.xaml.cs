@@ -97,36 +97,32 @@ namespace ConnectHub.App
 
         private void UpdateUIState(bool isLoggedIn)
         {
-            MainThread.BeginInvokeOnMainThread(() =>
+            try
             {
-                try
+                MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    Debug.WriteLine($"Updating UI state, isLoggedIn: {isLoggedIn}");
-                    
                     if (isLoggedIn)
                     {
-                        Current.CurrentItem = MainTabs;
                         if (!ToolbarItems.Contains(_logoutButton))
                         {
                             ToolbarItems.Add(_logoutButton);
-                            Debug.WriteLine("Added logout button to toolbar");
+                            Debug.WriteLine("Logout button added to toolbar");
                         }
                     }
                     else
                     {
-                        Current.CurrentItem = AuthenticationTabs;
                         if (ToolbarItems.Contains(_logoutButton))
                         {
                             ToolbarItems.Remove(_logoutButton);
-                            Debug.WriteLine("Removed logout button from toolbar");
+                            Debug.WriteLine("Logout button removed from toolbar");
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Error updating UI state: {ex}");
-                }
-            });
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error updating UI state: {ex}");
+            }
         }
 
         public async Task ShowMainTabs()

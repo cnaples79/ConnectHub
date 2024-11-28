@@ -5,6 +5,8 @@ using System.Net.Http.Json;
 using System.Diagnostics;
 using ConnectHub.Shared.Models;
 using Newtonsoft.Json;
+using System.Text;
+using System.Text.Json;
 
 namespace ConnectHub.App.Services
 {
@@ -167,59 +169,41 @@ namespace ConnectHub.App.Services
         {
             try
             {
-                // Ensure token is set
+                Debug.WriteLine($"Creating post with content: {content}");
+
                 if (string.IsNullOrEmpty(Token))
                 {
-                    Debug.WriteLine("No auth token found for create post request");
-                    throw new UnauthorizedAccessException("No authentication token found");
+                    throw new UnauthorizedAccessException("No authentication token available");
                 }
 
-                if (!_httpClient.DefaultRequestHeaders.Contains("Authorization"))
-                {
-                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);
-                    Debug.WriteLine("Added token to request headers");
-                }
+                var postData = new { content = content };
+                var json = JsonConvert.SerializeObject(postData);
+                var stringContent = new StringContent(json, Encoding.UTF8);
+                stringContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-                using var form = new MultipartFormDataContent();
-                form.Add(new StringContent(content), "Content"); // Changed to match DTO property name
-
-                if (latitude.HasValue)
-                    form.Add(new StringContent(latitude.Value.ToString()), "Latitude");
+                var response = await _httpClient.PostAsync("/api/post", stringContent);
                 
-                if (longitude.HasValue)
-                    form.Add(new StringContent(longitude.Value.ToString()), "Longitude");
-
-                if (imageStream != null && fileName != null)
-                {
-                    var imageContent = new StreamContent(imageStream);
-                    imageContent.Headers.ContentType = new MediaTypeHeaderValue(GetMimeType(fileName));
-                    form.Add(imageContent, "Image", fileName);
-                }
-
-                Debug.WriteLine("Sending create post request...");
-                var response = await _httpClient.PostAsync("/api/post", form);
-                Debug.WriteLine($"Create post response status: {response.StatusCode}");
+                Debug.WriteLine($"Post creation response status: {response.StatusCode}");
                 
-                if (!response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    Debug.WriteLine($"Create post error: {errorContent}");
-                    throw new HttpRequestException($"Failed to create post: {errorContent}");
+                    Debug.WriteLine("Post created successfully");
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var post = JsonConvert.DeserializeObject<Post>(responseContent);
+                    if (post == null)
+                    {
+                        throw new HttpRequestException("Invalid response from server");
+                    }
+                    return post;
                 }
                 
-                var responseContent = await response.Content.ReadAsStringAsync();
-                Debug.WriteLine($"Create post response: {responseContent}");
-                
-                var post = JsonConvert.DeserializeObject<Post>(responseContent);
-                if (post == null)
-                {
-                    throw new HttpRequestException("Invalid response from server");
-                }
-                return post;
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Debug.WriteLine($"Post creation failed. Error: {errorContent}");
+                throw new Exception($"Failed to create post. Status: {response.StatusCode}, Error: {errorContent}");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"CreatePostAsync error: {ex}");
+                Debug.WriteLine($"Exception in CreatePostAsync: {ex}");
                 throw;
             }
         }
