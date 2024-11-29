@@ -228,6 +228,8 @@ _SystemNative_Malloc
 _SystemNative_GetReadDirRBufferSize
 _SystemNative_ReadDirR
 _SystemNative_SchedGetCpu
+_SystemNative_GetEUid
+_SystemNative_GetEGid
 _SystemNative_GetPid
 _SystemNative_CreateAutoreleasePool
 _SystemNative_DrainAutoreleasePool
@@ -256,6 +258,7 @@ _SystemNative_Stat
 _SystemNative_LStat
 _SystemNative_SysLog
 _SystemNative_Unlink
+_SystemNative_GetGroups
 _SystemNative_SearchPath_TempDirectory
 _SystemNative_iOSSupportVersion
 _xamarin_release_managed_ref

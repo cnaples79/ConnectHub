@@ -31,6 +31,8 @@
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/bin/Debug/net8.0-maccatalyst/maccatalyst-x64/Microsoft.Maui.Essentials.dll
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/bin/Debug/net8.0-maccatalyst/maccatalyst-x64/Microsoft.Maui.Graphics.dll
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/bin/Debug/net8.0-maccatalyst/maccatalyst-x64/Newtonsoft.Json.dll
+/Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/bin/Debug/net8.0-maccatalyst/maccatalyst-x64/Polly.dll
+/Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/bin/Debug/net8.0-maccatalyst/maccatalyst-x64/Polly.Core.dll
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/bin/Debug/net8.0-maccatalyst/maccatalyst-x64/System.IdentityModel.Tokens.Jwt.dll
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/bin/Debug/net8.0-maccatalyst/maccatalyst-x64/System.IO.Pipelines.dll
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/bin/Debug/net8.0-maccatalyst/maccatalyst-x64/ar/Microsoft.Maui.Controls.resources.dll
@@ -306,6 +308,7 @@
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/obj/Debug/net8.0-maccatalyst/maccatalyst-x64/_ProcessedBundleResourcesPath.items
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/obj/Debug/net8.0-maccatalyst/maccatalyst-x64/_ProcessedContentPath.items
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/obj/Debug/net8.0-maccatalyst/maccatalyst-x64/ConnectHub.App.csproj.AssemblyReference.cache
+/Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/obj/Debug/net8.0-maccatalyst/maccatalyst-x64/resourcestamps/ConnectHub.Shared.stamp
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/obj/Debug/net8.0-maccatalyst/maccatalyst-x64/ConnectHub.App.GeneratedMSBuildEditorConfig.editorconfig
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/obj/Debug/net8.0-maccatalyst/maccatalyst-x64/ConnectHub.App.AssemblyInfoInputs.cache
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/obj/Debug/net8.0-maccatalyst/maccatalyst-x64/ConnectHub.App.AssemblyInfo.cs

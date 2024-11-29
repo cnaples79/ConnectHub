@@ -2,6 +2,19 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ConnectHub.Shared.DTOs
 {
+    public class UserDto
+    {
+        public string Id { get; set; }
+        public string Username { get; set; }
+        public string Email { get; set; }
+        public string? ProfileImageUrl { get; set; }
+        public string? Bio { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public int FollowersCount { get; set; }
+        public int FollowingCount { get; set; }
+        public bool IsFollowedByCurrentUser { get; set; }
+    }
+
     public class UserProfileDto : UserDto 
     {
         public bool IsFollowing { get; set; }

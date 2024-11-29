@@ -231,6 +231,8 @@
     <_ReferencesLinkerFlags Include="-u_SystemNative_GetReadDirRBufferSize" />
     <_ReferencesLinkerFlags Include="-u_SystemNative_ReadDirR" />
     <_ReferencesLinkerFlags Include="-u_SystemNative_SchedGetCpu" />
+    <_ReferencesLinkerFlags Include="-u_SystemNative_GetEUid" />
+    <_ReferencesLinkerFlags Include="-u_SystemNative_GetEGid" />
     <_ReferencesLinkerFlags Include="-u_SystemNative_GetPid" />
     <_ReferencesLinkerFlags Include="-u_SystemNative_CreateAutoreleasePool" />
     <_ReferencesLinkerFlags Include="-u_SystemNative_DrainAutoreleasePool" />
@@ -259,6 +261,7 @@
     <_ReferencesLinkerFlags Include="-u_SystemNative_LStat" />
     <_ReferencesLinkerFlags Include="-u_SystemNative_SysLog" />
     <_ReferencesLinkerFlags Include="-u_SystemNative_Unlink" />
+    <_ReferencesLinkerFlags Include="-u_SystemNative_GetGroups" />
     <_ReferencesLinkerFlags Include="-u_SystemNative_SearchPath_TempDirectory" />
     <_ReferencesLinkerFlags Include="-u_SystemNative_iOSSupportVersion" />
     <_ReferencesLinkerFlags Include="-u_xamarin_release_managed_ref" />

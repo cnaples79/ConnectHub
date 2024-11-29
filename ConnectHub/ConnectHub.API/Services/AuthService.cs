@@ -49,7 +49,7 @@ namespace ConnectHub.API.Services
             return new AuthResponseDto
             {
                 Token = GenerateJwtToken(user),
-                User = MapToUserDto(user)
+                User = MapToAuthUserDto(user)
             };
         }
 
@@ -70,7 +70,7 @@ namespace ConnectHub.API.Services
             return new AuthResponseDto
             {
                 Token = GenerateJwtToken(user),
-                User = MapToUserDto(user)
+                User = MapToAuthUserDto(user)
             };
         }
 
@@ -109,20 +109,20 @@ namespace ConnectHub.API.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        private static UserDto MapToUserDto(User user)
+        private AuthUserDto MapToAuthUserDto(User user)
         {
-            return new UserDto
+            return new AuthUserDto
             {
-                Id = user.Id,
+                Id = user.Id.ToString(),
                 Username = user.Username,
                 Email = user.Email,
-                Bio = user.Bio ?? "",
-                ProfileImageUrl = user.ProfileImageUrl ?? "",
-                IsOnline = user.IsOnline,
-                LastActive = user.LastActive,
+                Bio = user.Bio,
+                ProfileImageUrl = user.ProfileImageUrl,
                 CreatedAt = user.CreatedAt,
-                FollowersCount = user.Followers?.Count ?? 0,
-                FollowingCount = user.Following?.Count ?? 0
+                FollowersCount = user.Followers.Count,
+                FollowingCount = user.Following.Count,
+                LastActive = DateTime.UtcNow,
+                IsOnline = true
             };
         }
     }

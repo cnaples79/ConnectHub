@@ -121,13 +121,12 @@ namespace ConnectHub.API.Services
         {
             return new UserDto
             {
-                Id = user.Id,
+                Id = user.Id.ToString(),
                 Username = user.Username,
                 Email = user.Email,
-                Bio = user.Bio,
-                ProfileImageUrl = user.ProfileImageUrl,
+                Bio = user.Bio ?? "",
+                ProfileImageUrl = user.ProfileImageUrl ?? "",
                 CreatedAt = user.CreatedAt,
-                LastActive = user.LastActive,
                 FollowersCount = user.Followers?.Count ?? 0,
                 FollowingCount = user.Following?.Count ?? 0
             };

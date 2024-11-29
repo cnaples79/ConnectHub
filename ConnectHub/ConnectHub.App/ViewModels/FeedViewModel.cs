@@ -1,215 +1,247 @@
 using System.Collections.ObjectModel;
+using System.Windows.Input;
+using ConnectHub.App.Services;
 using ConnectHub.Shared.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using ConnectHub.App.Services;
-using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
-namespace ConnectHub.App.ViewModels;
-
-public partial class FeedViewModel : BaseViewModel
+namespace ConnectHub.App.ViewModels
 {
-    private readonly IApiService _apiService;
-    private readonly INavigationService _navigationService;
-    private int _currentPage = 0;
-    private const int PageSize = 20;
-
-    private bool _isRefreshing;
-    public bool IsRefreshing
+    public partial class FeedViewModel : ObservableObject
     {
-        get => _isRefreshing;
-        set => SetProperty(ref _isRefreshing, value);
-    }
+        private readonly IApiService _apiService;
+        private readonly ILogger<FeedViewModel> _logger;
+        private readonly IConnectivity _connectivity;
+        private readonly INavigationService _navigationService;
+        private readonly int _pageSize = 10;
+        private int _currentPage = 1;
+        private bool _hasMoreItems = true;
+        private DateTime _lastRefreshTime;
 
-    private ObservableCollection<Post> _posts;
-    public ObservableCollection<Post> Posts
-    {
-        get => _posts;
-        set => SetProperty(ref _posts, value);
-    }
+        [ObservableProperty]
+        private ObservableCollection<Post> _posts;
 
-    public FeedViewModel(IApiService apiService, INavigationService navigationService)
-    {
-        Debug.WriteLine("Initializing FeedViewModel");
-        Title = "Feed";
-        _apiService = apiService;
-        _navigationService = navigationService;
-        Posts = new ObservableCollection<Post>();
-        
-        MainThread.BeginInvokeOnMainThread(async () =>
+        [ObservableProperty]
+        private string _statusMessage = string.Empty;
+
+        [ObservableProperty]
+        private bool _isRefreshing;
+
+        [ObservableProperty]
+        private bool _isLoading;
+
+        public FeedViewModel(IApiService apiService, ILogger<FeedViewModel> logger, IConnectivity connectivity, INavigationService navigationService)
         {
+            _apiService = apiService;
+            _logger = logger;
+            _connectivity = connectivity;
+            _navigationService = navigationService;
+            _posts = new ObservableCollection<Post>();
+            _lastRefreshTime = DateTime.MinValue;
+        }
+
+        [RelayCommand]
+        private async Task LoadMoreItems()
+        {
+            if (IsLoading || !_hasMoreItems)
+                return;
+
             try
             {
-                Debug.WriteLine("Loading initial data from constructor");
-                await LoadInitialData();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error loading initial data: {ex}");
-            }
-        });
-    }
+                IsLoading = true;
+                StatusMessage = "Loading more posts...";
 
-    [RelayCommand]
-    private async Task LoadInitialData()
-    {
-        if (IsBusy)
-            return;
+                if (!_connectivity.NetworkAccess.Equals(NetworkAccess.Internet))
+                {
+                    StatusMessage = "No internet connection. Please check your network settings.";
+                    return;
+                }
 
-        try
-        {
-            IsBusy = true;
-            Debug.WriteLine("Loading initial feed data...");
+                var skip = (_currentPage - 1) * _pageSize;
+                var newPosts = await _apiService.GetFeedAsync(skip, _pageSize);
+                if (newPosts == null || !newPosts.Any())
+                {
+                    _hasMoreItems = false;
+                    StatusMessage = "No more posts to load";
+                    return;
+                }
 
-            var token = Preferences.Get("auth_token", string.Empty);
-            if (string.IsNullOrEmpty(token))
-            {
-                Debug.WriteLine("No auth token found. Redirecting to login.");
-                await Shell.Current.GoToAsync("//login");
-                return;
-            }
-
-            var posts = await _apiService.GetFeedAsync(0, 10);
-            if (posts != null && posts.Any())
-            {
-                Posts.Clear();
-                foreach (var post in posts)
+                foreach (var post in newPosts)
                 {
                     Posts.Add(post);
                 }
-                Debug.WriteLine($"Successfully loaded {posts.Count} posts");
+
+                _currentPage++;
+                StatusMessage = string.Empty;
             }
-            else
+            catch (HttpRequestException ex)
             {
-                Debug.WriteLine("No posts returned from API");
+                _logger.LogError(ex, "Error loading posts");
+                StatusMessage = "Failed to load posts. Please try again later.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error loading posts");
+                StatusMessage = "An unexpected error occurred. Please try again.";
+            }
+            finally
+            {
+                IsLoading = false;
             }
         }
-        catch (HttpRequestException ex)
-        {
-            Debug.WriteLine($"HTTP error loading feed: {ex.Message}");
-            await Shell.Current.DisplayAlert("Error", "Failed to load feed. Please check your internet connection.", "OK");
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Error loading feed: {ex}");
-            await Shell.Current.DisplayAlert("Error", "An unexpected error occurred while loading the feed.", "OK");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
 
-    [RelayCommand]
-    private async Task Refresh()
-    {
-        Debug.WriteLine("Manual refresh requested");
-        await LoadInitialData();
-    }
+        [RelayCommand]
+        private async Task RefreshFeed()
+        {
+            if (IsLoading || (DateTime.Now - _lastRefreshTime).TotalSeconds < 30)
+            {
+                StatusMessage = "Please wait a moment before refreshing again.";
+                IsRefreshing = false;
+                return;
+            }
 
-    [RelayCommand]
-    private async Task Like(Post post)
-    {
-        if (IsBusy) return;
+            try
+            {
+                IsLoading = true;
+                StatusMessage = "Refreshing feed...";
 
-        try
-        {
-            IsBusy = true;
-            await _apiService.LikePostAsync(post.Id);
-            await LoadInitialData();
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Like error: {ex}");
-            await Shell.Current.DisplayAlert("Error", "Failed to like post", "OK");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
+                if (!_connectivity.NetworkAccess.Equals(NetworkAccess.Internet))
+                {
+                    StatusMessage = "No internet connection. Please check your network settings.";
+                    return;
+                }
 
-    [RelayCommand]
-    private async Task Comment(Post post)
-    {
-        if (IsBusy) return;
+                _currentPage = 1;
+                _hasMoreItems = true;
+                var refreshedPosts = await _apiService.GetFeedAsync(0, _pageSize);
 
-        try
-        {
-            IsBusy = true;
-            await _navigationService.NavigateToAsync($"post/comments?postId={post.Id}");
-        }
-        catch (Exception ex)
-        {
-            await Shell.Current.DisplayAlert("Error", "Failed to open comments", "OK");
-            System.Diagnostics.Debug.WriteLine($"Comment navigation error: {ex}");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
+                Posts.Clear();
+                if (refreshedPosts != null)
+                {
+                    foreach (var post in refreshedPosts)
+                    {
+                        Posts.Add(post);
+                    }
+                }
 
-    [RelayCommand]
-    private async Task NewPost()
-    {
-        if (IsBusy) return;
+                _currentPage++;
+                _lastRefreshTime = DateTime.Now;
+                StatusMessage = string.Empty;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "Error refreshing feed");
+                StatusMessage = "Failed to refresh feed. Please try again later.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error refreshing feed");
+                StatusMessage = "An unexpected error occurred. Please try again.";
+            }
+            finally
+            {
+                IsLoading = false;
+                IsRefreshing = false;
+            }
+        }
 
-        try
+        [RelayCommand]
+        private async Task LikePost(Post post)
         {
-            IsBusy = true;
-            await Shell.Current.GoToAsync("post/create");
-        }
-        catch (Exception ex)
-        {
-            await Shell.Current.DisplayAlert("Error", "Failed to open new post page", "OK");
-            System.Diagnostics.Debug.WriteLine($"New post navigation error: {ex}");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
+            try
+            {
+                if (!_connectivity.NetworkAccess.Equals(NetworkAccess.Internet))
+                {
+                    StatusMessage = "No internet connection. Please check your network settings.";
+                    return;
+                }
 
-    [RelayCommand]
-    private async Task OpenProfile()
-    {
-        if (IsBusy) return;
+                var success = await _apiService.LikePostAsync(post.Id);
+                if (success)
+                {
+                    post.LikesCount++;
+                    post.IsLikedByCurrentUser = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error liking post");
+                StatusMessage = "Failed to like post. Please try again.";
+            }
+        }
 
-        try
+        [RelayCommand]
+        private async Task UnlikePost(Post post)
         {
-            IsBusy = true;
-            await Shell.Current.GoToAsync("//main/profile");
-        }
-        catch (Exception ex)
-        {
-            await Shell.Current.DisplayAlert("Error", "Failed to open profile", "OK");
-            System.Diagnostics.Debug.WriteLine($"Profile navigation error: {ex}");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
+            try
+            {
+                if (!_connectivity.NetworkAccess.Equals(NetworkAccess.Internet))
+                {
+                    StatusMessage = "No internet connection. Please check your network settings.";
+                    return;
+                }
 
-    [RelayCommand]
-    private async Task OpenChat()
-    {
-        if (IsBusy) return;
+                var success = await _apiService.UnlikePostAsync(post.Id);
+                if (success)
+                {
+                    post.LikesCount--;
+                    post.IsLikedByCurrentUser = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error unliking post");
+                StatusMessage = "Failed to unlike post. Please try again.";
+            }
+        }
 
-        try
+        [RelayCommand]
+        private async Task NavigateToComments(int postId)
         {
-            IsBusy = true;
-            await Shell.Current.GoToAsync("//main/chat");
+            try
+            {
+                await Shell.Current.GoToAsync($"comments?postId={postId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error navigating to comments for post {PostId}", postId);
+                StatusMessage = "Failed to open comments. Please try again.";
+            }
         }
-        catch (Exception ex)
+
+        [RelayCommand]
+        private async Task NavigateToNewPost()
         {
-            await Shell.Current.DisplayAlert("Error", "Failed to open chat", "OK");
-            System.Diagnostics.Debug.WriteLine($"Chat navigation error: {ex}");
+            try
+            {
+                await Shell.Current.GoToAsync("newpost");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error navigating to new post page");
+                StatusMessage = "Failed to open new post page. Please try again.";
+            }
         }
-        finally
+
+        [RelayCommand]
+        private async Task NavigateToProfile()
         {
-            IsBusy = false;
+            await _navigationService.NavigateToAsync("profile");
+        }
+
+        [RelayCommand]
+        private async Task NavigateToChat()
+        {
+            await _navigationService.NavigateToAsync("chat");
+        }
+
+        public async Task Initialize()
+        {
+            if (Posts.Count == 0)
+            {
+                await RefreshFeed();
+            }
         }
     }
 }

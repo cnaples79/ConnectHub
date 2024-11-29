@@ -2,15 +2,23 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewmodel="clr-namespace:ConnectHub.App.ViewModels"
-             xmlns:model="clr-namespace:ConnectHub.Shared.Models;assembly=ConnectHub.Shared"
+             xmlns:model="clr-namespace:ConnectHub.Shared.DTOs;assembly=ConnectHub.Shared"
              x:Class="ConnectHub.App.Views.FeedPage"
              x:DataType="viewmodel:FeedViewModel"
              BackgroundColor="#121212"
              Title="Feed">
 
-    <Grid RowDefinitions="Auto,*,Auto">
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+        <!-- Status Message -->
+        <Label Grid.Row="0"
+               Text="{Binding StatusMessage}"
+               TextColor="#757575"
+               IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullOrEmptyConverter}}"
+               Padding="15,10"
+               BackgroundColor="#1E1E1E"/>
+
         <!-- Top Bar -->
-        <Grid Grid.Row="0" 
+        <Grid Grid.Row="1" 
               BackgroundColor="#1E1E1E"
               Padding="15">
             <Grid.ColumnDefinitions>
@@ -24,7 +32,7 @@
                    HeightRequest="30"
                    WidthRequest="30">
                 <Image.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding OpenProfileCommand}"/>
+                    <TapGestureRecognizer Command="{Binding NavigateToProfileCommand}"/>
                 </Image.GestureRecognizers>
             </Image>
 
@@ -40,68 +48,124 @@
                    HeightRequest="30"
                    WidthRequest="30">
                 <Image.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding OpenChatCommand}"/>
+                    <TapGestureRecognizer Command="{Binding NavigateToChatCommand}"/>
                 </Image.GestureRecognizers>
             </Image>
         </Grid>
 
         <!-- Feed Content -->
-        <RefreshView Grid.Row="1" 
-                     Command="{Binding RefreshCommand}"
+        <RefreshView Grid.Row="2" 
+                     Command="{Binding RefreshFeedCommand}"
                      IsRefreshing="{Binding IsRefreshing}">
             <CollectionView ItemsSource="{Binding Posts}"
-                          EmptyView="No posts to display">
+                          RemainingItemsThreshold="2"
+                          RemainingItemsThresholdReachedCommand="{Binding LoadMoreItemsCommand}">
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center" 
+                                       HorizontalOptions="Center" 
+                                       Spacing="20">
+                        <Image Source="empty_feed.png" 
+                               HeightRequest="100" 
+                               Opacity="0.5"/>
+                        <Label Text="No posts to display"
+                               TextColor="#757575"
+                               FontSize="16"
+                               HorizontalOptions="Center"/>
+                        <Button Text="Refresh"
+                                Command="{Binding RefreshFeedCommand}"
+                                Style="{StaticResource SecondaryButton}"/>
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
                 <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="model:Post">
+                    <DataTemplate x:DataType="model:PostDto">
                         <Frame Margin="10,5"
-                               Padding="10"
+                               Padding="15"
                                BackgroundColor="#1E1E1E"
                                BorderColor="Transparent"
                                CornerRadius="10">
-                            <Grid RowDefinitions="Auto,Auto,Auto,Auto"
+                            <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto"
                                   RowSpacing="10">
                                 <!-- User Info -->
                                 <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
-                                    <Image Grid.Column="0"
-                                           Source="{Binding User.ProfileImageUrl}"
+                                    <Frame Grid.Column="0"
                                            HeightRequest="40"
                                            WidthRequest="40"
-                                           Aspect="AspectFill"/>
-                                    <Label Grid.Column="1"
-                                           Text="{Binding User.Username}"
-                                           TextColor="White"
-                                           FontAttributes="Bold"
-                                           VerticalOptions="Center"
-                                           Margin="10,0"/>
-                                    <Label Grid.Column="2"
-                                           Text="{Binding CreatedAt, StringFormat='{0:MM/dd/yyyy}'}"
-                                           TextColor="Gray"
-                                           VerticalOptions="Center"/>
+                                           CornerRadius="20"
+                                           Padding="0"
+                                           IsClippedToBounds="True">
+                                        <Image Source="{Binding User.ProfileImageUrl}"
+                                               Aspect="AspectFill"/>
+                                    </Frame>
+                                    <VerticalStackLayout Grid.Column="1" 
+                                                       Spacing="2"
+                                                       Margin="10,0">
+                                        <Label Text="{Binding User.Username}"
+                                               TextColor="White"
+                                               FontAttributes="Bold"/>
+                                        <Label Text="{Binding CreatedAt, StringFormat='{0:MM/dd/yyyy HH:mm}'}"
+                                               TextColor="#757575"
+                                               FontSize="12"/>
+                                    </VerticalStackLayout>
                                 </Grid>
 
                                 <!-- Post Content -->
                                 <Label Grid.Row="1"
                                        Text="{Binding Content}"
-                                       TextColor="White"/>
+                                       TextColor="White"
+                                       LineBreakMode="WordWrap"/>
+
+                                <!-- Location Info -->
+                                <Label Grid.Row="2"
+                                       Text="{Binding LocationName}"
+                                       TextColor="#757575"
+                                       FontSize="12"
+                                       IsVisible="{Binding LocationName, Converter={StaticResource StringNotNullOrEmptyConverter}}"/>
 
                                 <!-- Post Image -->
-                                <Image Grid.Row="2"
-                                       Source="{Binding ImageUrl}"
-                                       HeightRequest="200"
-                                       Aspect="AspectFill"
-                                       IsVisible="{Binding ImageUrl, Converter={StaticResource StringNotNullOrEmptyConverter}}"/>
+                                <Frame Grid.Row="3"
+                                       IsVisible="{Binding ImageUrl, Converter={StaticResource StringNotNullOrEmptyConverter}}"
+                                       Padding="0"
+                                       CornerRadius="10"
+                                       IsClippedToBounds="True">
+                                    <Image Source="{Binding ImageUrl}"
+                                           HeightRequest="200"
+                                           Aspect="AspectFill">
+                                        <Image.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:FeedViewModel}}, Path=ViewImageCommand}"
+                                                                 CommandParameter="{Binding ImageUrl}"/>
+                                        </Image.GestureRecognizers>
+                                    </Image>
+                                </Frame>
 
                                 <!-- Interaction Buttons -->
-                                <Grid Grid.Row="3" ColumnDefinitions="Auto,Auto,*">
+                                <Grid Grid.Row="4" 
+                                      ColumnDefinitions="Auto,Auto,*"
+                                      ColumnSpacing="15">
+                                    <!-- Like Button -->
                                     <Button Grid.Column="0"
-                                            Text="Like"
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:FeedViewModel}}, Path=LikeCommand}"
-                                            CommandParameter="{Binding}"/>
+                                            Style="{StaticResource IconButton}"
+                                            ImageSource="{Binding IsLikedByCurrentUser, Converter={StaticResource BoolToLikeIconConverter}}"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:FeedViewModel}}, Path=LikePostCommand}"
+                                            CommandParameter="{Binding Id}"/>
+                                    <Label Grid.Column="0"
+                                           Text="{Binding LikesCount}"
+                                           TextColor="#757575"
+                                           FontSize="12"
+                                           HorizontalOptions="Center"
+                                           Margin="0,5,0,0"/>
+
+                                    <!-- Comment Button -->
                                     <Button Grid.Column="1"
-                                            Text="Comment"
-                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:FeedViewModel}}, Path=CommentCommand}"
-                                            CommandParameter="{Binding}"
-                                            Margin="10,0"/>
+                                            Style="{StaticResource IconButton}"
+                                            ImageSource="comment_icon.png"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodel:FeedViewModel}}, Path=NavigateToCommentsCommand}"
+                                            CommandParameter="{Binding Id}"/>
+                                    <Label Grid.Column="1"
+                                           Text="{Binding CommentsCount}"
+                                           TextColor="#757575"
+                                           FontSize="12"
+                                           HorizontalOptions="Center"
+                                           Margin="0,5,0,0"/>
                                 </Grid>
                             </Grid>
                         </Frame>
@@ -111,10 +175,18 @@
         </RefreshView>
 
         <!-- New Post Button -->
-        <Button Grid.Row="2"
+        <Button Grid.Row="3"
                 Text="New Post"
-                Command="{Binding NewPostCommand}"
-                Margin="20"
-                BackgroundColor="#2196F3"/>
+                Command="{Binding NavigateToNewPostCommand}"
+                Style="{StaticResource PrimaryButton}"
+                Margin="20"/>
+
+        <!-- Loading Indicator -->
+        <ActivityIndicator Grid.RowSpan="4"
+                          IsRunning="{Binding IsLoading}"
+                          IsVisible="{Binding IsLoading}"
+                          HorizontalOptions="Center"
+                          VerticalOptions="Center"
+                          Color="#2196F3"/>
     </Grid>
 </ContentPage>

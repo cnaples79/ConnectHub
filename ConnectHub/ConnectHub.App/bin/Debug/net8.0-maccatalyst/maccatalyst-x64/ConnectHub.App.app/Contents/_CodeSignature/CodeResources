@@ -10,7 +10,7 @@
 		</data>
 		<key>Resources/Assets.car</key>
 		<data>
-		kY7WVvZHxxqOGghP3vwlgafXmX4=
+		nXKwqmOMKePj/WWJfwuw2PWplSM=
 		</data>
 		<key>Resources/MauiInfo.plist</key>
 		<data>
@@ -51,35 +51,35 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			6bGQ9dq/ka78R66iFcl/7kvm1no5LitQuvU/5HrAWhw=
+			GLi6j5ouUDOHGnVTbZjO3SNyCYPus0qVFlDCymYpz/c=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.App.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			FDI7Ua14IwrEPoOWFs60wI9lGKTWKrOMl3usTmnBk5k=
+			A4sgevg5wLRZr02cM9RsH9DoWejBZnlIOKY0KWbezKQ=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.App.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			S32ei3sZ4GbC7bQxqTiENxsBKgueHVXuVUMK9iI+iNY=
+			AO73G3+cDNpb2h15nK9lw8GjGFMnlA2RHha+z5wB6hM=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.Shared.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			+Agu+bG7CjCsTwPhnmQwsXj/47HWqoHETrJvmDHdGYI=
+			j83B6HLobVpD6YOJHfXDCBov9ptk+f9T2A2mEEGKQTQ=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.Shared.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			wUy2yR65OO5xoRrBINlLeI98bi0+YPczibfEGnzgmGc=
+			l8Nxw+NNDBbLU5M1w7deqmJHVPfuZoX1RwABGWlmSCk=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.AspNetCore.Connections.Abstractions.dll</key>
@@ -149,14 +149,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			rlilS3XVE3wWoj1xYUj87uuiQWacvL75/apE2/kAswU=
+			h1Q3hBTuwkeX6PpxRJYxV/9P+MeuwcRVBATRtLn0NVY=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.Extensions.Configuration.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			4pr7Zd+Vb3sdVqPesMoELiQJoBdHfAByB+m2dpJ27kc=
+			axO31Lu5s6UFG79KXywUQPab7UABs+n9QHWlLPHzAzk=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.Extensions.DependencyInjection.Abstractions.dll</key>
@@ -198,7 +198,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			LLFrgtuVPubH7kgmy/+ur6m4idYnIXgRkZis6PuoYC8=
+			H7/dXIuEMYDoJGrI8tinNRWkp3gyaYJPaAn57Ltux5Y=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.Extensions.Options.dll</key>
@@ -247,14 +247,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			jk5TmwF+3CqlElJ3ZEtBZjCzQlpZoM4XNsYhbemhX+Y=
+			34nUHNCayjfJul5UEGua7ZgR/jWg7kTu1NQ5v1KT3Ls=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.MacCatalyst.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			5/AmFKoj8IvfDU5XUWntyUFbqkGqb2856UXx4i6d8Gg=
+			ctJui7dZLrZ55+oi8LHawZ+rUZdM/FMANhoFkSgzFrs=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.Maui.Controls.Xaml.dll</key>
@@ -275,7 +275,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			QG0dLf06UbHHG3asmOZQAM5A0NdSg6hA9aCw9nGMFgk=
+			HjUat4Ig3+LJN6WmWh5+k5K8uOvdlxYtIY5e00I3faQ=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.Maui.Graphics.dll</key>
@@ -299,11 +299,25 @@
 			IsZJ91/OW+fHzNqIgEc7Y072ns8z9dGritiSyvR9Wgc=
 			</data>
 		</dict>
+		<key>MonoBundle/Polly.Core.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			fAGA88H9DKJFZbrD6K4HkXVUbt2mQmNzgWaSira9jso=
+			</data>
+		</dict>
+		<key>MonoBundle/Polly.dll</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			UIAj/qkDLFWF2dME7F1qflcvyrDPSFh/wE7cYCYNwQY=
+			</data>
+		</dict>
 		<key>MonoBundle/System.Collections.Concurrent.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			yw7eUK9Qm2G31NuECX9M3BrrQOY1GA1x3SMqRB/kwf0=
+			iLEOL97djtQj2/Vm9jzIZRnPFtdNXQJrM1A9RiVdOsI=
 			</data>
 		</dict>
 		<key>MonoBundle/System.Collections.NonGeneric.dll</key>
@@ -331,7 +345,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			u138OtFkQ9bMvGIQzTF84RexxV6FCitST1BOF98P33M=
+			d2XV8/sFRQ/N89CEc6WEfGiKEDLddfHoT3nyMKYtGVU=
 			</data>
 		</dict>
 		<key>MonoBundle/System.ComponentModel.Primitives.dll</key>
@@ -345,7 +359,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			0FC4SyT/iRK1IEjoNKsqS4I9/wOuuxxYDqf7sV7VjMc=
+			N6p8EOlzPp+weXhzY39y5M+xS9OmaeYDaEXgOEEXINs=
 			</data>
 		</dict>
 		<key>MonoBundle/System.ComponentModel.dll</key>
@@ -436,7 +450,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			U2xV+NdUF83KXxbLbMdxtK9h/azG8LgUaATtk/17Gv0=
+			gRmnc+9iQjyO0r+vtdcVs74PyjnPpXJnPq+cAv07Mds=
 			</data>
 		</dict>
 		<key>MonoBundle/System.Memory.dll</key>
@@ -450,7 +464,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			UAdeBXGg41ufsSgenG4BXQ34g0w5auCebc+O0F+6k5E=
+			URf11S6S3QETehJs7oAOv36o6J60X3FSy37YhMlbWC4=
 			</data>
 		</dict>
 		<key>MonoBundle/System.Net.Http.dll</key>
@@ -478,7 +492,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			Hh24xg2l7GjIaiWF2tGs3mSIucWRRx4WsvTqFfvnmHY=
+			PAecAXnMY4NvVzJdz0Fq8jExq2t9EQIL0HOJg9wP4b4=
 			</data>
 		</dict>
 		<key>MonoBundle/System.Net.Requests.dll</key>
@@ -548,14 +562,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			5bqeL18CsnMaUDzF91S/Z31bDWc5lEvOlJZEpsA/hic=
+			hiBcCuUfz24hxHvtSMGIGYQjNUekZB1W+IvA7h57dIU=
 			</data>
 		</dict>
 		<key>MonoBundle/System.Private.CoreLib.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			ClMnIxAC9DcJhJTcobx2TWiziyWkV3qiP9w+vyTBMHM=
+			BSa1PMc+pLEghzQTdQLW3T+BJsL1q2dISGLAeBgKkKg=
 			</data>
 		</dict>
 		<key>MonoBundle/System.Private.Uri.dll</key>
@@ -632,7 +646,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			7TfQrQmFTG4DVAcDkTJpKccuVzpU9b2fKyE4hzfBaUU=
+			fZ+m9vRTPzKlh2zMBcS8SAEMg+B+7Ci0t9j+PkQsVYw=
 			</data>
 		</dict>
 		<key>MonoBundle/System.Security.Claims.dll</key>
@@ -737,7 +751,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			xarYMhD4AEyryyP8Iz33Qxotrn6+TqvbOSpI01fC8KI=
+			Md0VClwvD7SNi/82iTBYhpe6oGpjbmHdUBfLBD9GaL8=
 			</data>
 		</dict>
 		<key>MonoBundle/System.Xml.Linq.dll</key>
@@ -1031,7 +1045,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			WcyBHty90vbZuBACzyu+QplAvYhB8LkatTa6ny/gSfA=
+			O5IQBl5HqQtC8bsVRF/ML9Ajezrtwb1JReotng0tg4I=
 			</data>
 		</dict>
 		<key>Resources/MauiInfo.plist</key>

@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Collections.Generic;
 
 namespace ConnectHub.Shared.Models
 {
@@ -31,9 +32,10 @@ namespace ConnectHub.Shared.Models
         public bool IsOnline { get; set; }
 
         // Navigation properties
-        public virtual ICollection<Post> Posts { get; set; }
-        public virtual ICollection<Comment> Comments { get; set; }
-        public virtual ICollection<User> Followers { get; set; }
-        public virtual ICollection<User> Following { get; set; }
+        public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
+        public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
+        public virtual ICollection<PostLike> LikedPosts { get; set; } = new List<PostLike>();
+        public virtual ICollection<UserFollow> Following { get; set; } = new List<UserFollow>();
+        public virtual ICollection<UserFollow> Followers { get; set; } = new List<UserFollow>();
     }
 }

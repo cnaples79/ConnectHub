@@ -3,6 +3,7 @@ using ConnectHub.App.Services;
 using ConnectHub.App.ViewModels;
 using ConnectHub.App.Views;
 using ConnectHub.App.Converters;
+using Microsoft.Extensions.Configuration;
 
 namespace ConnectHub.App;
 
@@ -24,9 +25,24 @@ public static class MauiProgram
             essentials.UseVersionTracking();
         });
 
+        // Configuration
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string>
+            {
+                {"ApiBaseUrl", "https://localhost:5001/"}
+            })
+            .Build();
+        builder.Services.AddSingleton<IConfiguration>(configuration);
+
         // Register Services
         builder.Services.AddSingleton<IPreferences>(Preferences.Default);
+        builder.Services.AddSingleton<IConnectivity>(Connectivity.Current);
+        builder.Services.AddSingleton<IGeolocation>(Geolocation.Default);
+        builder.Services.AddSingleton<IGeocoding>(Geocoding.Default);
+        builder.Services.AddSingleton<IFilePicker>(FilePicker.Default);
         builder.Services.AddSingleton<IApiService, ApiService>();
+        builder.Services.AddSingleton<ILocationService, LocationService>();
+        builder.Services.AddSingleton<IAuthService, AuthService>();
         builder.Services.AddSingleton<INavigationService, NavigationService>();
 
         // Register AppShell
@@ -54,7 +70,7 @@ public static class MauiProgram
         builder.Services.AddTransient<CommentsPage>();
         
 #if DEBUG
-        builder.Logging.AddDebug().SetMinimumLevel(LogLevel.Trace);
+        builder.Logging.AddDebug();
 #endif
 
         return builder.Build();

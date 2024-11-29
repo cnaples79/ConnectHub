@@ -4,13 +4,106 @@
              xmlns:viewmodel="clr-namespace:ConnectHub.App.ViewModels"
              x:Class="ConnectHub.App.Views.NewPostPage"
              x:DataType="viewmodel:NewPostViewModel"
+             BackgroundColor="#121212"
              Title="New Post">
-    <VerticalStackLayout Spacing="10" Padding="20">
-        <Editor Placeholder="What's on your mind?"
-                HeightRequest="200"
-                Text="{Binding Content}"/>
-        <Button Text="Post"
-                Command="{Binding CreatePostCommand}"
-                IsEnabled="{Binding CanPost}"/>
-    </VerticalStackLayout>
+    
+    <Grid RowDefinitions="Auto,*,Auto" Padding="20">
+        <!-- Status Message -->
+        <Label Grid.Row="0" 
+               Text="{Binding StatusMessage}"
+               TextColor="#757575"
+               IsVisible="{Binding StatusMessage, Converter={StaticResource StringNotNullOrEmptyConverter}}"
+               Margin="0,0,0,10"/>
+
+        <ScrollView Grid.Row="1">
+            <VerticalStackLayout Spacing="15">
+                <!-- Content Editor -->
+                <Frame BackgroundColor="#1E1E1E" 
+                       BorderColor="Transparent" 
+                       Padding="10"
+                       CornerRadius="10">
+                    <Editor Placeholder="What's on your mind?"
+                            PlaceholderColor="#757575"
+                            TextColor="White"
+                            AutoSize="TextChanges"
+                            MaxLength="500"
+                            Text="{Binding Content}"/>
+                </Frame>
+
+                <!-- Character Count -->
+                <Label Text="{Binding Content.Length, StringFormat='{0}/500 characters'}"
+                       TextColor="#757575"
+                       HorizontalOptions="End"/>
+
+                <!-- Selected Image Preview -->
+                <Frame IsVisible="{Binding SelectedImagePath, Converter={StaticResource StringNotNullOrEmptyConverter}}"
+                       BackgroundColor="#1E1E1E"
+                       BorderColor="Transparent"
+                       Padding="10"
+                       CornerRadius="10">
+                    <Grid RowDefinitions="Auto,Auto" RowSpacing="10">
+                        <Image Grid.Row="0"
+                               Source="{Binding SelectedImagePath}"
+                               HeightRequest="200"
+                               Aspect="AspectFit"/>
+                        <Button Grid.Row="1"
+                                Text="Remove Image"
+                                Command="{Binding ClearImageCommand}"
+                                Style="{StaticResource DangerButton}"/>
+                    </Grid>
+                </Frame>
+
+                <!-- Location Info -->
+                <Frame IsVisible="{Binding IsLocationEnabled}"
+                       BackgroundColor="#1E1E1E"
+                       BorderColor="Transparent"
+                       Padding="10"
+                       CornerRadius="10">
+                    <Label Text="{Binding LocationName}"
+                           TextColor="White"/>
+                </Frame>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Bottom Action Bar -->
+        <Grid Grid.Row="2" 
+              ColumnDefinitions="Auto,Auto,*,Auto"
+              ColumnSpacing="10"
+              BackgroundColor="#1E1E1E"
+              Padding="10">
+            
+            <!-- Image Picker -->
+            <Button Grid.Column="0"
+                    ImageSource="image_icon.png"
+                    Command="{Binding PickImageCommand}"
+                    WidthRequest="40"
+                    HeightRequest="40"
+                    Style="{StaticResource IconButton}"/>
+
+            <!-- Location Toggle -->
+            <Button Grid.Column="1"
+                    ImageSource="location_icon.png"
+                    Command="{Binding ToggleLocationCommand}"
+                    WidthRequest="40"
+                    HeightRequest="40"
+                    Style="{StaticResource IconButton}"
+                    BackgroundColor="{Binding IsLocationEnabled, Converter={StaticResource BoolToColorConverter}}"/>
+
+            <!-- Post Button -->
+            <Button Grid.Column="3"
+                    Text="Post"
+                    Command="{Binding CreatePostCommand}"
+                    IsEnabled="{Binding Content.Length, Converter={StaticResource StringLengthToBoolConverter}}"
+                    Style="{StaticResource PrimaryButton}"/>
+        </Grid>
+
+        <!-- Loading Overlay -->
+        <Grid Grid.RowSpan="3"
+              BackgroundColor="#80000000"
+              IsVisible="{Binding IsPosting}">
+            <ActivityIndicator IsRunning="{Binding IsPosting}"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center"/>
+        </Grid>
+    </Grid>
 </ContentPage>

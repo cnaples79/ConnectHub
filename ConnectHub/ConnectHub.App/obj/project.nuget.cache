@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "fWEkPHEwUh18MFfq1Wd+oP2jxMFNX2P6ktQqHzK2D5r5qYa+tsSYsjXWVXaUlk3bDCYnqwoWi1TuCe02icryog==",
+  "dgSpecHash": "UaqkkCpYZgRaLyJxHV7X0uI+yhNQA/Q/fmkleOK1lR5YbSl6R2rb96eh6+zhE+Diqug7EX97PIC2bpr55IPa3g==",
   "success": true,
   "projectFilePath": "/Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/ConnectHub.App.csproj",
   "expectedPackageFiles": [
@@ -43,6 +43,8 @@
     "/Users/chasenaples/.nuget/packages/microsoft.netcore.platforms/1.1.0/microsoft.netcore.platforms.1.1.0.nupkg.sha512",
     "/Users/chasenaples/.nuget/packages/microsoft.netcore.targets/1.1.0/microsoft.netcore.targets.1.1.0.nupkg.sha512",
     "/Users/chasenaples/.nuget/packages/newtonsoft.json/13.0.3/newtonsoft.json.13.0.3.nupkg.sha512",
+    "/Users/chasenaples/.nuget/packages/polly/8.5.0/polly.8.5.0.nupkg.sha512",
+    "/Users/chasenaples/.nuget/packages/polly.core/8.5.0/polly.core.8.5.0.nupkg.sha512",
     "/Users/chasenaples/.nuget/packages/runtime.any.system.runtime/4.3.0/runtime.any.system.runtime.4.3.0.nupkg.sha512",
     "/Users/chasenaples/.nuget/packages/runtime.any.system.text.encoding/4.3.0/runtime.any.system.text.encoding.4.3.0.nupkg.sha512",
     "/Users/chasenaples/.nuget/packages/runtime.native.system/4.3.0/runtime.native.system.4.3.0.nupkg.sha512",

@@ -92,6 +92,10 @@
               "target": "Package",
               "version": "[13.0.3, )"
             },
+            "Polly": {
+              "target": "Package",
+              "version": "[8.5.0, )"
+            },
             "System.IdentityModel.Tokens.Jwt": {
               "target": "Package",
               "version": "[6.32.1, )"
@@ -151,6 +155,10 @@
               "target": "Package",
               "version": "[13.0.3, )"
             },
+            "Polly": {
+              "target": "Package",
+              "version": "[8.5.0, )"
+            },
             "System.IdentityModel.Tokens.Jwt": {
               "target": "Package",
               "version": "[6.32.1, )"
@@ -209,6 +217,10 @@
             "Newtonsoft.Json": {
               "target": "Package",
               "version": "[13.0.3, )"
+            },
+            "Polly": {
+              "target": "Package",
+              "version": "[8.5.0, )"
             },
             "System.IdentityModel.Tokens.Jwt": {
               "target": "Package",

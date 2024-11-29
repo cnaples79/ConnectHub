@@ -3,6 +3,14 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                     xmlns:converters="clr-namespace:ConnectHub.App.Converters">
 
+    <!-- Converters -->
+    <converters:StringNotNullOrEmptyConverter x:Key="StringNotNullOrEmptyConverter"/>
+    <converters:BoolToColorConverter x:Key="BoolToColorConverter"/>
+    <converters:StringLengthToBoolConverter x:Key="StringLengthToBoolConverter"/>
+    <converters:BoolToLikeIconConverter x:Key="BoolToLikeIconConverter"/>
+    <converters:DateTimeToRelativeTimeConverter x:Key="DateTimeToRelativeTimeConverter"/>
+    <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
+
     <!-- Colors -->
     <Color x:Key="Primary">#512BD4</Color>
     <Color x:Key="Secondary">#DFD8F7</Color>
@@ -50,6 +58,69 @@
         <Setter Property="TextColor" Value="{StaticResource Primary}"/>
     </Style>
 
+    <!-- Post Card Styles -->
+    <Style x:Key="PostCardFrame" TargetType="Frame">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray900}}"/>
+        <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"/>
+        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="Padding" Value="16"/>
+        <Setter Property="Margin" Value="16,8"/>
+        <Setter Property="HasShadow" Value="{OnPlatform iOS=false, Android=true}"/>
+    </Style>
+
+    <Style x:Key="ProfileImage" TargetType="Image">
+        <Setter Property="HeightRequest" Value="40"/>
+        <Setter Property="WidthRequest" Value="40"/>
+        <Setter Property="Aspect" Value="AspectFill"/>
+    </Style>
+
+    <Style x:Key="PostImage" TargetType="Image">
+        <Setter Property="Aspect" Value="AspectFit"/>
+        <Setter Property="HeightRequest" Value="200"/>
+        <Setter Property="HorizontalOptions" Value="FillAndExpand"/>
+    </Style>
+
+    <!-- Action Button Style -->
+    <Style x:Key="ActionButton" TargetType="ImageButton">
+        <Setter Property="BackgroundColor" Value="Transparent"/>
+        <Setter Property="HeightRequest" Value="24"/>
+        <Setter Property="WidthRequest" Value="24"/>
+        <Setter Property="Padding" Value="0"/>
+    </Style>
+
+    <!-- Loading and Status Styles -->
+    <Style x:Key="LoadingIndicator" TargetType="ActivityIndicator">
+        <Setter Property="Color" Value="{StaticResource Primary}"/>
+        <Setter Property="HorizontalOptions" Value="Center"/>
+        <Setter Property="VerticalOptions" Value="Center"/>
+        <Setter Property="HeightRequest" Value="50"/>
+        <Setter Property="WidthRequest" Value="50"/>
+    </Style>
+
+    <Style x:Key="StatusLabel" TargetType="Label">
+        <Setter Property="HorizontalOptions" Value="Center"/>
+        <Setter Property="Margin" Value="0,8"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}"/>
+    </Style>
+
+    <!-- Editor Styles -->
+    <Style x:Key="PostEditor" TargetType="Editor">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}"/>
+        <Setter Property="BackgroundColor" Value="Transparent"/>
+        <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray500}}"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="AutoSize" Value="TextChanges"/>
+        <Setter Property="MaxLength" Value="500"/>
+    </Style>
+
+    <Style x:Key="CharacterCountLabel" TargetType="Label">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}"/>
+        <Setter Property="HorizontalOptions" Value="End"/>
+        <Setter Property="Margin" Value="0,4"/>
+    </Style>
+
     <!-- Entry Style -->
     <Style TargetType="Entry">
         <Setter Property="TextColor" Value="{StaticResource Gray900}" />
@@ -73,7 +144,7 @@
         </Setter>
     </Style>
 
-    <!-- Styles -->
+    <!-- Base Styles -->
     <Style TargetType="Page" ApplyToDerivedTypes="True">
         <Setter Property="Padding" Value="0"/>
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}" />

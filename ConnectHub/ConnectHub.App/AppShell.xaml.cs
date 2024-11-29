@@ -38,7 +38,7 @@ namespace ConnectHub.App
 
                 // Set initial state based on token
                 var token = _preferences.Get<string>("auth_token", string.Empty);
-                Debug.WriteLine($"Initial token: {token?.Substring(0, Math.Min(10, token?.Length ?? 0))}...");
+                Debug.WriteLine($"Initial token: {(string.IsNullOrEmpty(token) ? "not found" : "found")}");
 
                 if (!string.IsNullOrEmpty(token))
                 {
@@ -46,22 +46,8 @@ namespace ConnectHub.App
                     _apiService.Token = token;
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        try
-                        {
-                            UpdateUIState(true);
-                            Current.GoToAsync("//main/feed").ContinueWith(t =>
-                            {
-                                if (t.IsFaulted)
-                                {
-                                    Debug.WriteLine($"Navigation failed: {t.Exception}");
-                                }
-                            });
-                            Debug.WriteLine("Navigated to feed page");
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine($"Error during navigation: {ex}");
-                        }
+                        UpdateUIState(true);
+                        Current.GoToAsync("///main/feed");
                     });
                 }
                 else
@@ -69,22 +55,8 @@ namespace ConnectHub.App
                     Debug.WriteLine("No token found, setting up unauthenticated state");
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        try
-                        {
-                            UpdateUIState(false);
-                            Current.GoToAsync("//authentication/login").ContinueWith(t =>
-                            {
-                                if (t.IsFaulted)
-                                {
-                                    Debug.WriteLine($"Navigation failed: {t.Exception}");
-                                }
-                            });
-                            Debug.WriteLine("Navigated to login page");
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine($"Error during navigation: {ex}");
-                        }
+                        UpdateUIState(false);
+                        Current.GoToAsync("///login");
                     });
                 }
 
@@ -101,13 +73,13 @@ namespace ConnectHub.App
         {
             try
             {
-                Routing.RegisterRoute("login", typeof(LoginPage));
+                Debug.WriteLine("Registering routes...");
+                
+                // Register all routes that aren't part of the shell structure
                 Routing.RegisterRoute("register", typeof(RegisterPage));
-                Routing.RegisterRoute("feed", typeof(FeedPage));
-                Routing.RegisterRoute("chat", typeof(ChatPage));
-                Routing.RegisterRoute("profile", typeof(ProfilePage));
                 Routing.RegisterRoute("post/create", typeof(NewPostPage));
                 Routing.RegisterRoute("post/comments", typeof(CommentsPage));
+                
                 Debug.WriteLine("Routes registered successfully");
             }
             catch (Exception ex)
@@ -125,13 +97,11 @@ namespace ConnectHub.App
                 
                 // Clear the token
                 _preferences.Remove("auth_token");
-                
-                // Reset the HttpClient in ApiService
                 _apiService.Token = null;
 
                 // Update UI and navigate
                 UpdateUIState(false);
-                await Current.GoToAsync("//authentication/login");
+                await Current.GoToAsync("///login");
                 
                 Debug.WriteLine("Logout completed successfully");
             }
@@ -149,32 +119,21 @@ namespace ConnectHub.App
                 Debug.WriteLine($"Updating UI state, isLoggedIn: {isLoggedIn}");
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    try
+                    if (isLoggedIn)
                     {
-                        if (isLoggedIn)
+                        if (!ToolbarItems.Contains(_logoutButton))
                         {
-                            if (!ToolbarItems.Contains(_logoutButton))
-                            {
-                                ToolbarItems.Add(_logoutButton);
-                                Debug.WriteLine("Added logout button to toolbar");
-                            }
-                            Current.CurrentItem = MainTabs;
-                            Debug.WriteLine("Set current item to MainTabs");
-                        }
-                        else
-                        {
-                            if (ToolbarItems.Contains(_logoutButton))
-                            {
-                                ToolbarItems.Remove(_logoutButton);
-                                Debug.WriteLine("Removed logout button from toolbar");
-                            }
-                            Current.CurrentItem = AuthenticationTabs;
-                            Debug.WriteLine("Set current item to AuthenticationTabs");
+                            ToolbarItems.Add(_logoutButton);
+                            Debug.WriteLine("Added logout button to toolbar");
                         }
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        Debug.WriteLine($"Error in UI update: {ex}");
+                        if (ToolbarItems.Contains(_logoutButton))
+                        {
+                            ToolbarItems.Remove(_logoutButton);
+                            Debug.WriteLine("Removed logout button from toolbar");
+                        }
                     }
                 });
             }

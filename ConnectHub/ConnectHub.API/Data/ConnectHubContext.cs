@@ -1,19 +1,18 @@
-using Microsoft.EntityFrameworkCore;
 using ConnectHub.Shared.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace ConnectHub.API.Data
 {
     public class ConnectHubContext : DbContext
     {
-        public ConnectHubContext(DbContextOptions<ConnectHubContext> options)
-            : base(options)
-        {
-        }
+        public ConnectHubContext(DbContextOptions<ConnectHubContext> options) : base(options) { }
 
         public DbSet<User> Users { get; set; }
         public DbSet<Post> Posts { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<PostLike> PostLikes { get; set; }
+        public DbSet<UserFollow> UserFollows { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -33,10 +32,20 @@ namespace ConnectHub.API.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             // User followers/following relationships
-            modelBuilder.Entity<User>()
-                .HasMany(u => u.Followers)
+            modelBuilder.Entity<UserFollow>()
+                .HasKey(uf => new { uf.FollowerId, uf.FollowingId });
+
+            modelBuilder.Entity<UserFollow>()
+                .HasOne(uf => uf.Follower)
                 .WithMany(u => u.Following)
-                .UsingEntity(j => j.ToTable("UserFollows"));
+                .HasForeignKey(uf => uf.FollowerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserFollow>()
+                .HasOne(uf => uf.Following)
+                .WithMany(u => u.Followers)
+                .HasForeignKey(uf => uf.FollowingId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             // Post relationships
             modelBuilder.Entity<Post>()
@@ -45,10 +54,20 @@ namespace ConnectHub.API.Data
                 .HasForeignKey(c => c.PostId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<Post>()
-                .HasMany(p => p.LikedBy)
-                .WithMany()
-                .UsingEntity(j => j.ToTable("PostLikes"));
+            modelBuilder.Entity<PostLike>()
+                .HasKey(pl => new { pl.PostId, pl.UserId });
+
+            modelBuilder.Entity<PostLike>()
+                .HasOne(pl => pl.Post)
+                .WithMany(p => p.LikedBy)
+                .HasForeignKey(pl => pl.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PostLike>()
+                .HasOne(pl => pl.User)
+                .WithMany(u => u.LikedPosts)
+                .HasForeignKey(pl => pl.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Comment relationships
             modelBuilder.Entity<Comment>()

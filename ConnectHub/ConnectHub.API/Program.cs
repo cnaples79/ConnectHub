@@ -39,7 +39,8 @@ builder.Services.AddAuthentication(x =>
 
 // Register services
 builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<PostService>();
+builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<FileUploadService>();
 
 // Add SignalR

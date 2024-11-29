@@ -1,91 +1,97 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Diagnostics;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Polly;
+using Polly.Retry;
 using ConnectHub.Shared.Models;
+using ConnectHub.Shared.DTOs;
 using Newtonsoft.Json;
 using System.Text;
+using System.Diagnostics;
+using System.IO;
+using System.Net.Http.Json;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
+using System.Net.Mime;
 
 namespace ConnectHub.App.Services
 {
-    public class ApiService : IApiService
+    public class ApiService : IApiService, IDisposable
     {
         private readonly HttpClient _httpClient;
-        private readonly string _baseUrl;
-        private readonly IPreferences _preferences;
+        private readonly IConfiguration _configuration;
+        private readonly JsonSerializerOptions _jsonOptions;
+        private readonly AsyncRetryPolicy<HttpResponseMessage> _retryPolicy;
 
-        public string? Token
-        {
-            get => _preferences.Get<string>("auth_token", null);
+        public string? Token 
+        { 
+            get => _httpClient.DefaultRequestHeaders.Authorization?.Parameter;
             set
             {
-                if (value == null)
-                    _preferences.Remove("auth_token");
-                else
-                    _preferences.Set("auth_token", value);
-                
-                if (value != null)
-                {
-                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", value);
-                }
-                else
-                {
+                if (string.IsNullOrEmpty(value))
                     _httpClient.DefaultRequestHeaders.Authorization = null;
-                }
+                else
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", value);
             }
         }
 
-        public ApiService(IPreferences preferences)
+        public ApiService(IConfiguration configuration)
         {
-            _preferences = preferences;
-            _baseUrl = DeviceInfo.Platform == DevicePlatform.Android 
-                ? "http://10.0.2.2:5000" // Android Emulator
-                : "http://localhost:5000"; // iOS Simulator or Local Debug
-
-            Debug.WriteLine($"Initializing ApiService with base URL: {_baseUrl}");
-
+            _configuration = configuration;
             _httpClient = new HttpClient
             {
-                BaseAddress = new Uri(_baseUrl)
+                BaseAddress = new Uri(_configuration["ApiBaseUrl"] ?? "https://localhost:5001/")
             };
 
-            // Add token if exists
-            var token = _preferences.Get<string>("auth_token", string.Empty);
-            if (!string.IsNullOrEmpty(token))
+            _jsonOptions = new JsonSerializerOptions
             {
-                Token = token;
-                Debug.WriteLine("Token found and set in HttpClient headers");
-            }
+                PropertyNameCaseInsensitive = true
+            };
+
+            _retryPolicy = Policy<HttpResponseMessage>
+                .Handle<HttpRequestException>()
+                .Or<TaskCanceledException>()
+                .WaitAndRetryAsync(3, retryAttempt =>
+                    TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                    onRetry: (exception, timeSpan, retryCount, context) =>
+                    {
+                        Debug.WriteLine($"Retry {retryCount} after {timeSpan.TotalSeconds} seconds due to {exception.Exception.Message}");
+                    });
         }
 
         public async Task<string> LoginAsync(string email, string password)
         {
             try
             {
-                var loginData = new { Email = email, Password = password };
-                var response = await _httpClient.PostAsJsonAsync("/api/auth/login", loginData);
-                
-                if (!response.IsSuccessStatusCode)
+                var loginData = new { email, password };
+                var json = JsonConvert.SerializeObject(loginData);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _retryPolicy.ExecuteAsync(async () =>
+                    await _httpClient.PostAsync("api/auth/login", content));
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    throw new HttpRequestException($"Login failed: {errorContent}");
+                    var result = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseContent);
+                    var token = result["token"];
+                    Token = token;
+                    return token;
                 }
-                
-                var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
-                if (result?.Token == null)
+
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
-                    throw new HttpRequestException("Invalid response from server");
+                    throw new UnauthorizedAccessException("Invalid email or password");
                 }
-                
-                Token = result.Token;
-                
-                return result.Token;
+
+                throw new HttpRequestException($"Login failed: {responseContent}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Login error: {ex}");
+                Debug.WriteLine($"Login error: {ex}");
                 throw;
             }
         }
@@ -101,216 +107,149 @@ namespace ConnectHub.App.Services
                     ConfirmPassword = confirmPassword
                 };
                 
-                var response = await _httpClient.PostAsJsonAsync("/api/auth/register", registerData);
+                var json = JsonConvert.SerializeObject(registerData);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                var response = await _retryPolicy.ExecuteAsync(async () =>
+                    await _httpClient.PostAsync("api/auth/register", content));
                 
-                if (!response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    throw new HttpRequestException($"Registration failed: {errorContent}");
+                    return true;
+                }
+
+                var errorContent = await response.Content.ReadAsStringAsync();
+                if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                {
+                    throw new InvalidOperationException(errorContent);
                 }
                 
-                return true;
+                throw new HttpRequestException($"Registration failed: {errorContent}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Registration error: {ex}");
+                Debug.WriteLine($"Registration error: {ex}");
                 throw;
             }
         }
 
         public async Task<List<Post>> GetFeedAsync(int skip, int take)
         {
-            try
-            {
-                // Convert skip/take to page/pageSize
-                int page = (skip / take) + 1;
-                int pageSize = take;
-                
-                Debug.WriteLine($"Getting feed with page={page}, pageSize={pageSize}");
-                
-                // Ensure token is set
-                if (string.IsNullOrEmpty(Token))
-                {
-                    Debug.WriteLine("No auth token found for feed request");
-                    throw new UnauthorizedAccessException("No authentication token found");
-                }
-
-                if (!_httpClient.DefaultRequestHeaders.Contains("Authorization"))
-                {
-                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Token);
-                    Debug.WriteLine("Added token to request headers");
-                }
-
-                var response = await _httpClient.GetAsync($"/api/post?page={page}&pageSize={pageSize}");
-                Debug.WriteLine($"Feed API response status: {response.StatusCode}");
-                
-                if (!response.IsSuccessStatusCode)
-                {
-                    var error = await response.Content.ReadAsStringAsync();
-                    Debug.WriteLine($"Feed API error: {error}");
-                    throw new HttpRequestException($"Failed to load feed: {error}");
-                }
-
-                var content = await response.Content.ReadAsStringAsync();
-                Debug.WriteLine($"Feed API response content: {content}");
-                
-                var posts = JsonConvert.DeserializeObject<List<Post>>(content);
-                Debug.WriteLine($"Deserialized {posts?.Count ?? 0} posts");
-                return posts ?? new List<Post>();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"GetFeedAsync error: {ex}");
-                throw;
-            }
+            var response = await _httpClient.GetAsync($"api/posts?skip={skip}&take={take}");
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<List<Post>>(_jsonOptions) ?? new List<Post>();
         }
 
         public async Task<Post> CreatePostAsync(string content, Stream? imageStream = null, string? fileName = null, double? latitude = null, double? longitude = null)
         {
-            try
+            var formData = new MultipartFormDataContent();
+            formData.Add(new StringContent(content), "Content");
+
+            if (imageStream != null && fileName != null)
             {
-                Debug.WriteLine($"Creating post with content: {content}");
-                Debug.WriteLine($"Current token: {Token?.Substring(0, Math.Min(10, Token?.Length ?? 0))}...");
-                Debug.WriteLine($"Authorization header: {_httpClient.DefaultRequestHeaders.Authorization?.ToString() ?? "null"}");
-
-                if (string.IsNullOrEmpty(Token))
-                {
-                    Debug.WriteLine("No token available");
-                    throw new UnauthorizedAccessException("No authentication token available");
-                }
-
-                var formData = new MultipartFormDataContent();
-                formData.Add(new StringContent(content), "Content");
-                Debug.WriteLine("Added content to form data");
-
-                if (latitude.HasValue)
-                {
-                    formData.Add(new StringContent(latitude.Value.ToString()), "Latitude");
-                    Debug.WriteLine($"Added latitude: {latitude.Value}");
-                }
-
-                if (longitude.HasValue)
-                {
-                    formData.Add(new StringContent(longitude.Value.ToString()), "Longitude");
-                    Debug.WriteLine($"Added longitude: {longitude.Value}");
-                }
-
-                if (imageStream != null && !string.IsNullOrEmpty(fileName))
-                {
-                    var imageContent = new StreamContent(imageStream);
-                    imageContent.Headers.ContentType = new MediaTypeHeaderValue(GetMimeType(fileName));
-                    formData.Add(imageContent, "Image", fileName);
-                    Debug.WriteLine($"Added image: {fileName}");
-                }
-
-                Debug.WriteLine("Sending request to /api/post");
-                var response = await _httpClient.PostAsync("/api/post", formData);
-                
-                Debug.WriteLine($"Response status code: {response.StatusCode}");
-                Debug.WriteLine($"Response headers: {string.Join(", ", response.Headers.Select(h => $"{h.Key}: {string.Join(", ", h.Value)}"))}");
-                
-                var responseContent = await response.Content.ReadAsStringAsync();
-                Debug.WriteLine($"Response content: {responseContent}");
-
-                if (response.IsSuccessStatusCode)
-                {
-                    Debug.WriteLine("Post created successfully");
-                    var post = JsonConvert.DeserializeObject<Post>(responseContent);
-                    if (post == null)
-                    {
-                        Debug.WriteLine("Failed to deserialize response");
-                        throw new HttpRequestException("Invalid response from server");
-                    }
-                    return post;
-                }
-                
-                Debug.WriteLine($"Post creation failed. Status: {response.StatusCode}, Error: {responseContent}");
-                throw new Exception($"Failed to create post. Status: {response.StatusCode}, Error: {responseContent}");
+                var imageContent = new StreamContent(imageStream);
+                imageContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+                formData.Add(imageContent, "Image", fileName);
             }
-            catch (Exception ex)
+
+            if (latitude.HasValue && longitude.HasValue)
             {
-                Debug.WriteLine($"Exception in CreatePostAsync: {ex}");
-                throw;
+                formData.Add(new StringContent(latitude.Value.ToString()), "Latitude");
+                formData.Add(new StringContent(longitude.Value.ToString()), "Longitude");
             }
+
+            var response = await _httpClient.PostAsync("api/posts", formData);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<Post>(_jsonOptions) ?? throw new Exception("Failed to create post");
         }
 
         public async Task<bool> LikePostAsync(int postId)
         {
-            var response = await _httpClient.PostAsync($"/api/posts/{postId}/like", null);
+            var response = await _httpClient.PostAsync($"api/posts/{postId}/like", null);
             return response.IsSuccessStatusCode;
         }
 
         public async Task<bool> UnlikePostAsync(int postId)
         {
-            var response = await _httpClient.DeleteAsync($"/api/posts/{postId}/like");
+            var response = await _httpClient.DeleteAsync($"api/posts/{postId}/like");
             return response.IsSuccessStatusCode;
         }
 
         public async Task<List<Comment>> GetCommentsAsync(int postId)
         {
-            try
-            {
-                var response = await _httpClient.GetAsync($"/api/post/{postId}/comments");
-                if (response.IsSuccessStatusCode)
-                {
-                    return await response.Content.ReadFromJsonAsync<List<Comment>>() ?? new List<Comment>();
-                }
-                throw new HttpRequestException($"Error getting comments: {response.StatusCode}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error getting comments: {ex}");
-                throw;
-            }
+            var response = await _httpClient.GetAsync($"api/posts/{postId}/comments");
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<List<Comment>>(_jsonOptions) ?? new List<Comment>();
         }
 
         public async Task<Comment> AddCommentAsync(int postId, string content)
         {
-            try
-            {
-                var response = await _httpClient.PostAsJsonAsync($"/api/post/{postId}/comments", new { Content = content });
-                if (response.IsSuccessStatusCode)
-                {
-                    return await response.Content.ReadFromJsonAsync<Comment>();
-                }
-                throw new HttpRequestException($"Error adding comment: {response.StatusCode}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error adding comment: {ex}");
-                throw;
-            }
+            var comment = new { Content = content };
+            var response = await _httpClient.PostAsJsonAsync($"api/posts/{postId}/comments", comment);
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<Comment>(_jsonOptions) ?? throw new Exception("Failed to add comment");
+        }
+
+        public async Task<List<Post>> SearchPostsAsync(string query)
+        {
+            var response = await _httpClient.GetAsync($"api/posts/search?q={Uri.EscapeDataString(query)}");
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<List<Post>>(_jsonOptions) ?? new List<Post>();
+        }
+
+        public async Task<List<Post>> GetNearbyPostsAsync(double latitude, double longitude)
+        {
+            var response = await _httpClient.GetAsync($"api/posts/nearby?latitude={latitude}&longitude={longitude}");
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<List<Post>>(_jsonOptions) ?? new List<Post>();
         }
 
         public async Task<List<ChatMessage>> GetChatHistoryAsync(int userId)
         {
-            var response = await _httpClient.GetAsync($"/api/chat/{userId}/history");
+            var response = await _httpClient.GetAsync($"api/chat/{userId}");
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<List<ChatMessage>>();
+            return await response.Content.ReadFromJsonAsync<List<ChatMessage>>(_jsonOptions) ?? new List<ChatMessage>();
         }
 
         public async Task SendMessageAsync(int receiverId, string content)
         {
-            var response = await _httpClient.PostAsJsonAsync($"/api/chat/{receiverId}/send", new { content });
+            var message = new { ReceiverId = receiverId, Content = content };
+            var response = await _httpClient.PostAsJsonAsync("api/chat", message);
             response.EnsureSuccessStatusCode();
         }
 
         public async Task<bool> ReportPostAsync(int postId)
         {
-            var response = await _httpClient.PostAsync($"/api/posts/{postId}/report", null);
+            var response = await _httpClient.PostAsync($"api/posts/{postId}/report", null);
             return response.IsSuccessStatusCode;
         }
 
         public async Task<User> GetUserProfileAsync(int userId)
         {
-            var response = await _httpClient.GetAsync($"/api/users/{userId}/profile");
+            var response = await _httpClient.GetAsync($"api/users/{userId}");
             response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<User>();
+            return await response.Content.ReadFromJsonAsync<User>(_jsonOptions) ?? throw new Exception("Failed to get user profile");
+        }
+
+        public async Task UpdateProfileAsync(string username, Stream? profilePictureStream = null)
+        {
+            var formData = new MultipartFormDataContent();
+            formData.Add(new StringContent(username), "Username");
+
+            if (profilePictureStream != null)
+            {
+                var imageContent = new StreamContent(profilePictureStream);
+                imageContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
+                formData.Add(imageContent, "ProfilePicture", "profile.jpg");
+            }
+
+            var response = await _httpClient.PutAsync("api/users/profile", formData);
+            response.EnsureSuccessStatusCode();
         }
 
         public async Task<bool> LogoutAsync(int userId)
         {
-            var response = await _httpClient.PostAsync($"/api/auth/logout/{userId}", null);
+            var response = await _httpClient.PostAsync($"api/auth/logout/{userId}", null);
             if (response.IsSuccessStatusCode)
             {
                 Token = null;
@@ -319,51 +258,9 @@ namespace ConnectHub.App.Services
             return false;
         }
 
-        public async Task UpdateProfileAsync(string username, Stream? profilePictureStream = null)
+        public void Dispose()
         {
-            using var form = new MultipartFormDataContent();
-            form.Add(new StringContent(username), "username");
-
-            if (profilePictureStream != null)
-            {
-                var imageContent = new StreamContent(profilePictureStream);
-                imageContent.Headers.ContentType = new MediaTypeHeaderValue("image/jpeg");
-                form.Add(imageContent, "profilePicture", "profile.jpg");
-            }
-
-            var response = await _httpClient.PutAsync("/api/user/profile", form);
-            response.EnsureSuccessStatusCode();
-        }
-
-        public async Task<List<Post>> SearchPostsAsync(string query)
-        {
-            var response = await _httpClient.GetAsync($"/api/posts/search?query={Uri.EscapeDataString(query)}");
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<List<Post>>();
-        }
-
-        public async Task<List<Post>> GetNearbyPostsAsync(double latitude, double longitude)
-        {
-            var response = await _httpClient.GetAsync($"/api/posts/nearby?latitude={latitude}&longitude={longitude}");
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<List<Post>>();
-        }
-
-        private string GetMimeType(string fileName)
-        {
-            var ext = Path.GetExtension(fileName).ToLowerInvariant();
-            return ext switch
-            {
-                ".jpg" or ".jpeg" => "image/jpeg",
-                ".png" => "image/png",
-                ".gif" => "image/gif",
-                _ => "application/octet-stream"
-            };
-        }
-
-        private class LoginResponse
-        {
-            public string Token { get; set; }
+            _httpClient.Dispose();
         }
     }
 }

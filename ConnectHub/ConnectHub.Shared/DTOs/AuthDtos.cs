@@ -34,20 +34,12 @@ namespace ConnectHub.Shared.DTOs
     public class AuthResponseDto
     {
         public string Token { get; set; } = string.Empty;
-        public UserDto User { get; set; } = null!;
+        public AuthUserDto User { get; set; } = null!;
     }
 
-    public class UserDto
+    public class AuthUserDto : UserDto
     {
-        public int Id { get; set; }
-        public string Username { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string Bio { get; set; } = string.Empty;
-        public string ProfileImageUrl { get; set; } = string.Empty;
-        public DateTime CreatedAt { get; set; }
         public DateTime LastActive { get; set; }
         public bool IsOnline { get; set; }
-        public int FollowersCount { get; set; }
-        public int FollowingCount { get; set; }
     }
 }

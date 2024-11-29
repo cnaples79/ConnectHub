@@ -46,6 +46,9 @@
     <_LinkerFrameworks Include="MediaPlayer">
       <IsWeak>false</IsWeak>
     </_LinkerFrameworks>
+    <_LinkerFrameworks Include="MobileCoreServices">
+      <IsWeak>false</IsWeak>
+    </_LinkerFrameworks>
     <_LinkerFrameworks Include="QuartzCore">
       <IsWeak>false</IsWeak>
     </_LinkerFrameworks>

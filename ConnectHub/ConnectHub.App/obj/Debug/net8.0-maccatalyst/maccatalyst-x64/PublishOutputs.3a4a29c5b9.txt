@@ -63,6 +63,8 @@
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/bin/Debug/net8.0-maccatalyst/maccatalyst-x64/publish/../ConnectHub.App.app/Contents/MonoBundle/Microsoft.Maui.Essentials.dll
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/bin/Debug/net8.0-maccatalyst/maccatalyst-x64/publish/../ConnectHub.App.app/Contents/MonoBundle/Microsoft.Maui.Graphics.dll
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/bin/Debug/net8.0-maccatalyst/maccatalyst-x64/publish/../ConnectHub.App.app/Contents/MonoBundle/Newtonsoft.Json.dll
+/Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/bin/Debug/net8.0-maccatalyst/maccatalyst-x64/publish/../ConnectHub.App.app/Contents/MonoBundle/Polly.dll
+/Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/bin/Debug/net8.0-maccatalyst/maccatalyst-x64/publish/../ConnectHub.App.app/Contents/MonoBundle/Polly.Core.dll
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/bin/Debug/net8.0-maccatalyst/maccatalyst-x64/publish/../ConnectHub.App.app/Contents/MonoBundle/System.IdentityModel.Tokens.Jwt.dll
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/bin/Debug/net8.0-maccatalyst/maccatalyst-x64/publish/../ConnectHub.App.app/Contents/MonoBundle/System.IO.Pipelines.dll
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/bin/Debug/net8.0-maccatalyst/maccatalyst-x64/publish/../ConnectHub.App.app/Contents/MonoBundle/ConnectHub.Shared.dll

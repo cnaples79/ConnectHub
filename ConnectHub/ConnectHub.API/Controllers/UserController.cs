@@ -1,7 +1,7 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using ConnectHub.API.Services;
 using ConnectHub.Shared.DTOs;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace ConnectHub.API.Controllers
@@ -11,53 +11,58 @@ namespace ConnectHub.API.Controllers
     [Authorize]
     public class UserController : ControllerBase
     {
-        private readonly UserService _userService;
+        private readonly IUserService _userService;
 
-        public UserController(UserService userService)
+        public UserController(IUserService userService)
         {
             _userService = userService;
         }
 
         [HttpGet("profile/{userId}")]
-        public async Task<ActionResult<UserProfileDto>> GetUserProfile(int userId)
+        public async Task<ActionResult<UserProfileDto>> GetUserProfile(string userId)
         {
             try
             {
-                var currentUserId = GetUserId();
-                var profile = await _userService.GetUserProfileAsync(userId, currentUserId);
+                var profile = await _userService.GetUserProfileAsync(userId);
                 return Ok(profile);
             }
-            catch (InvalidOperationException ex)
-            {
-                return NotFound(ex.Message);
-            }
-        }
-
-        [HttpPost("follow/{userId}")]
-        public async Task<ActionResult> FollowUser(int userId)
-        {
-            try
-            {
-                var currentUserId = GetUserId();
-                await _userService.FollowUserAsync(userId, currentUserId);
-                return Ok();
-            }
-            catch (InvalidOperationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
 
-        [HttpDelete("follow/{userId}")]
-        public async Task<ActionResult> UnfollowUser(int userId)
+        [HttpPost("follow/{userId}")]
+        public async Task<ActionResult<bool>> FollowUser(string userId)
         {
             try
             {
-                var currentUserId = GetUserId();
-                await _userService.UnfollowUserAsync(userId, currentUserId);
-                return Ok();
+                var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(currentUserId))
+                    return Unauthorized();
+
+                var result = await _userService.FollowUserAsync(userId, currentUserId);
+                return Ok(result);
             }
-            catch (InvalidOperationException ex)
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete("unfollow/{userId}")]
+        public async Task<ActionResult<bool>> UnfollowUser(string userId)
+        {
+            try
+            {
+                var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(currentUserId))
+                    return Unauthorized();
+
+                var result = await _userService.UnfollowUserAsync(userId, currentUserId);
+                return Ok(result);
+            }
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -68,39 +73,31 @@ namespace ConnectHub.API.Controllers
         {
             try
             {
-                var currentUserId = GetUserId();
-                var users = await _userService.SearchUsersAsync(query, currentUserId, page, pageSize);
+                var users = await _userService.SearchUsersAsync(query, page, pageSize);
                 return Ok(users);
             }
-            catch (InvalidOperationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
 
         [HttpPut("profile")]
-        public async Task<ActionResult<UserProfileDto>> UpdateProfile([FromBody] UpdateProfileDto updateProfileDto)
+        public async Task<ActionResult<UserDto>> UpdateProfile([FromBody] UpdateProfileDto updateProfileDto)
         {
             try
             {
-                var userId = GetUserId();
-                var profile = await _userService.UpdateProfileAsync(userId, updateProfileDto);
-                return Ok(profile);
+                var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(currentUserId))
+                    return Unauthorized();
+
+                var updatedUser = await _userService.UpdateProfileAsync(currentUserId, updateProfileDto);
+                return Ok(updatedUser);
             }
-            catch (InvalidOperationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
-        }
-
-        private int GetUserId()
-        {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
-            {
-                throw new UnauthorizedAccessException("Invalid user ID claim");
-            }
-            return userId;
         }
     }
 }
