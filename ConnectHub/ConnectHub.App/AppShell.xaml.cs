@@ -18,13 +18,19 @@ namespace ConnectHub.App
         {
             try
             {
-                InitializeComponent();
-                _preferences = preferences;
-                _apiService = apiService;
+                Debug.WriteLine("=== AppShell Initialization Started ===");
+                Debug.WriteLine($"Thread ID: {Environment.CurrentManagedThreadId}");
+                Debug.WriteLine($"Is Main Thread: {MainThread.IsMainThread}");
 
-                Debug.WriteLine("Initializing AppShell...");
+                _preferences = preferences ?? throw new ArgumentNullException(nameof(preferences));
+                _apiService = apiService ?? throw new ArgumentNullException(nameof(apiService));
+
+                Debug.WriteLine("Initializing AppShell components...");
+                InitializeComponent();
+                Debug.WriteLine("AppShell components initialized");
 
                 // Create logout button
+                Debug.WriteLine("Creating logout button...");
                 _logoutButton = new ToolbarItem
                 {
                     Text = "Logout",
@@ -32,13 +38,17 @@ namespace ConnectHub.App
                     Order = ToolbarItemOrder.Primary,
                     Priority = 0
                 };
+                Debug.WriteLine("Logout button created");
 
                 // Register routes
+                Debug.WriteLine("Registering navigation routes...");
                 RegisterRoutes();
+                Debug.WriteLine("Navigation routes registered");
 
                 // Set initial state based on token
+                Debug.WriteLine("Checking authentication state...");
                 var token = _preferences.Get<string>("auth_token", string.Empty);
-                Debug.WriteLine($"Initial token: {(string.IsNullOrEmpty(token) ? "not found" : "found")}");
+                Debug.WriteLine($"Token status: {(string.IsNullOrEmpty(token) ? "not found" : "found")}");
 
                 if (!string.IsNullOrEmpty(token))
                 {
@@ -46,26 +56,38 @@ namespace ConnectHub.App
                     _apiService.Token = token;
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        UpdateUIState(true);
-                        Current.GoToAsync("///main/feed");
+                        try
+                        {
+                            Debug.WriteLine("Updating UI state...");
+                            UpdateUIState(true);
+                            Debug.WriteLine("Navigating to feed...");
+                            Current.GoToAsync("///main/feed");
+                            Debug.WriteLine("Navigation completed");
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"[ERROR] UI update failed: {ex.Message}");
+                            Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                        }
                     });
                 }
                 else
                 {
-                    Debug.WriteLine("No token found, setting up unauthenticated state");
-                    MainThread.BeginInvokeOnMainThread(() =>
-                    {
-                        UpdateUIState(false);
-                        Current.GoToAsync("///login");
-                    });
+                    Debug.WriteLine("No token found, remaining in unauthenticated state");
                 }
 
-                Debug.WriteLine("AppShell initialization completed");
+                Debug.WriteLine("=== AppShell Initialization Completed Successfully ===");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error initializing AppShell: {ex}");
-                throw;
+                Debug.WriteLine($"[CRITICAL] AppShell initialization error: {ex.Message}");
+                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                if (ex.InnerException != null)
+                {
+                    Debug.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                    Debug.WriteLine($"Inner exception stack trace: {ex.InnerException.StackTrace}");
+                }
+                throw; // Re-throw to ensure the app crashes with the original exception
             }
         }
 

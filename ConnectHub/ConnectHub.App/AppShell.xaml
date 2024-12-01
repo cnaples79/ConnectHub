@@ -35,19 +35,19 @@
 
     <!-- Main Flow -->
     <TabBar Route="main">
-        <Tab Title="Feed" Icon="feed_icon.png">
+        <Tab Title="Feed">
             <ShellContent 
                 Route="feed"
                 ContentTemplate="{DataTemplate views:FeedPage}" />
         </Tab>
         
-        <Tab Title="Chat" Icon="chat_icon.png">
+        <Tab Title="Chat">
             <ShellContent 
                 Route="chat"
                 ContentTemplate="{DataTemplate views:ChatPage}" />
         </Tab>
         
-        <Tab Title="Profile" Icon="profile_icon.png">
+        <Tab Title="Profile">
             <ShellContent 
                 Route="profile"
                 ContentTemplate="{DataTemplate views:ProfilePage}" />

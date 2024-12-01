@@ -12,9 +12,9 @@ using System.Text;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http.Json;
-using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using System.Net.Mime;
+using System.Text.Json;
 
 namespace ConnectHub.App.Services
 {
@@ -24,6 +24,7 @@ namespace ConnectHub.App.Services
         private readonly IConfiguration _configuration;
         private readonly JsonSerializerOptions _jsonOptions;
         private readonly AsyncRetryPolicy<HttpResponseMessage> _retryPolicy;
+        private readonly string _logFilePath;
 
         public string? Token 
         { 
@@ -50,6 +51,29 @@ namespace ConnectHub.App.Services
                 PropertyNameCaseInsensitive = true
             };
 
+            var localAppData = FileSystem.AppDataDirectory;
+            _logFilePath = Path.Combine(localAppData, "connecthub_login.log");
+            Debug.WriteLine($"Log file will be created at: {_logFilePath}");
+
+            try
+            {
+                // Create the directory if it doesn't exist
+                var directory = Path.GetDirectoryName(_logFilePath);
+                if (!Directory.Exists(directory) && directory != null)
+                {
+                    Directory.CreateDirectory(directory);
+                }
+                
+                // Test write to the log file
+                LogToFile("ApiService initialized");
+                Debug.WriteLine("Successfully wrote initial log message");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error initializing log file: {ex.Message}");
+                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+            }
+
             _retryPolicy = Policy<HttpResponseMessage>
                 .Handle<HttpRequestException>()
                 .Or<TaskCanceledException>()
@@ -57,42 +81,100 @@ namespace ConnectHub.App.Services
                     TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
                     onRetry: (exception, timeSpan, retryCount, context) =>
                     {
-                        Debug.WriteLine($"Retry {retryCount} after {timeSpan.TotalSeconds} seconds due to {exception.Exception.Message}");
+                        LogToFile($"Retry {retryCount} after {timeSpan.TotalSeconds} seconds due to {exception.Exception.Message}");
                     });
+        }
+
+        private void LogToFile(string message)
+        {
+            try
+            {
+                var logMessage = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - {message}{Environment.NewLine}";
+                File.AppendAllText(_logFilePath, logMessage);
+                Debug.WriteLine($"Logged message: {message}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to write to log file: {ex.Message}");
+                Debug.WriteLine($"Attempted to write to: {_logFilePath}");
+                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+            }
         }
 
         public async Task<string> LoginAsync(string email, string password)
         {
             try
             {
+                LogToFile("=== Login Attempt Started ===");
+                LogToFile($"Base Address: {_httpClient.BaseAddress}");
+                
                 var loginData = new { email, password };
                 var json = JsonConvert.SerializeObject(loginData);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
-
+                
+                LogToFile("Sending login request...");
                 var response = await _retryPolicy.ExecuteAsync(async () =>
-                    await _httpClient.PostAsync("api/auth/login", content));
+                {
+                    var request = new HttpRequestMessage(HttpMethod.Post, "api/auth/login")
+                    {
+                        Content = content
+                    };
+                    LogToFile($"Request URI: {request.RequestUri}");
+                    var resp = await _httpClient.SendAsync(request);
+                    LogToFile($"Response Status Code: {resp.StatusCode}");
+                    return resp;
+                });
 
                 var responseContent = await response.Content.ReadAsStringAsync();
+                LogToFile($"Response Content: {responseContent}");
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseContent);
-                    var token = result["token"];
-                    Token = token;
-                    return token;
+                    try
+                    {
+                        var result = JsonConvert.DeserializeObject<AuthResponseDto>(responseContent);
+                        if (result?.Token != null)
+                        {
+                            LogToFile("Successfully parsed authentication response");
+                            Token = result.Token;
+                            return result.Token;
+                        }
+                        else
+                        {
+                            LogToFile("ERROR: Token was null in response");
+                            throw new InvalidOperationException("Invalid response format: Token was null");
+                        }
+                    }
+                    catch (Newtonsoft.Json.JsonException ex)
+                    {
+                        LogToFile($"ERROR: Failed to parse response: {ex.Message}");
+                        throw new InvalidOperationException($"Failed to parse login response: {ex.Message}");
+                    }
                 }
 
                 if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
+                    LogToFile("ERROR: Unauthorized: Invalid credentials");
                     throw new UnauthorizedAccessException("Invalid email or password");
                 }
 
-                throw new HttpRequestException($"Login failed: {responseContent}");
+                LogToFile($"ERROR: Unexpected response: {response.StatusCode}");
+                throw new HttpRequestException($"Login failed with status code {response.StatusCode}: {responseContent}");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Login error: {ex}");
+                LogToFile($"ERROR: Login exception: {ex.GetType().Name}: {ex.Message}");
+                LogToFile($"Stack trace: {ex.StackTrace}");
+                if (ex.InnerException != null)
+                {
+                    LogToFile($"Inner exception: {ex.InnerException.Message}");
+                    LogToFile($"Inner exception stack trace: {ex.InnerException.StackTrace}");
+                }
                 throw;
+            }
+            finally
+            {
+                LogToFile("=== Login Attempt Completed ===");
             }
         }
 
@@ -128,7 +210,7 @@ namespace ConnectHub.App.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Registration error: {ex}");
+                LogToFile($"ERROR: Registration error: {ex.Message}");
                 throw;
             }
         }
