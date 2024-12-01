@@ -9,13 +9,39 @@ public partial class App : Application
     {
         try
         {
+            Debug.WriteLine("Starting App initialization...");
+            
+            // Initialize components first
             InitializeComponent();
+            Debug.WriteLine("Components initialized successfully");
+            
+            // Set main page
             MainPage = appShell;
+            Debug.WriteLine("MainPage set successfully");
+            
+            // Register for unhandled exceptions
+            AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+            {
+                Debug.WriteLine($"Unhandled exception: {e.ExceptionObject}");
+            };
+            
+            TaskScheduler.UnobservedTaskException += (sender, e) =>
+            {
+                Debug.WriteLine($"Unobserved Task exception: {e.Exception}");
+                e.SetObserved();
+            };
+            
             Debug.WriteLine("App initialized successfully");
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"App initialization error: {ex}");
+            Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+            if (ex.InnerException != null)
+            {
+                Debug.WriteLine($"Inner exception: {ex.InnerException}");
+                Debug.WriteLine($"Inner exception stack trace: {ex.InnerException.StackTrace}");
+            }
             throw;
         }
     }
@@ -24,44 +50,43 @@ public partial class App : Application
     {
         try
         {
+            Debug.WriteLine("Creating window...");
             Window window = base.CreateWindow(activationState);
 
             if (window != null)
             {
                 window.Created += (s, e) =>
                 {
-                    System.Diagnostics.Debug.WriteLine("Window created");
+                    Debug.WriteLine("Window created");
                 };
 
                 window.Activated += (s, e) =>
                 {
-                    System.Diagnostics.Debug.WriteLine("Window activated");
+                    Debug.WriteLine("Window activated");
                 };
 
                 window.Deactivated += (s, e) =>
                 {
-                    System.Diagnostics.Debug.WriteLine("Window deactivated");
+                    Debug.WriteLine("Window deactivated");
                 };
 
                 window.Stopped += (s, e) =>
                 {
-                    System.Diagnostics.Debug.WriteLine("Window stopped");
+                    Debug.WriteLine("Window stopped");
                 };
-
-                if (DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst)
-                {
-                    Microsoft.Maui.Handlers.WindowHandler.Mapper.AppendToMapping(nameof(IWindow), (handler, view) =>
-                    {
-                        System.Diagnostics.Debug.WriteLine("Configuring MacCatalyst window");
-                    });
-                }
+            }
+            else
+            {
+                Debug.WriteLine("Window creation returned null");
             }
 
-            return window ?? throw new InvalidOperationException("Failed to create window");
+            Debug.WriteLine("Window creation completed");
+            return window;
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Window creation error: {ex}");
+            Debug.WriteLine($"Window creation error: {ex}");
+            Debug.WriteLine($"Stack trace: {ex.StackTrace}");
             throw;
         }
     }

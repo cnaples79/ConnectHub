@@ -10,7 +10,7 @@
 		</data>
 		<key>Resources/Assets.car</key>
 		<data>
-		nXKwqmOMKePj/WWJfwuw2PWplSM=
+		b90uEQcabsNcR/gq1/wK2Rv9O9o=
 		</data>
 		<key>Resources/MauiInfo.plist</key>
 		<data>
@@ -58,28 +58,28 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			A4sgevg5wLRZr02cM9RsH9DoWejBZnlIOKY0KWbezKQ=
+			jljogkxE/NfkcuImes6eu448MIzrZ3zEwQNvBQNebjc=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.App.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			AO73G3+cDNpb2h15nK9lw8GjGFMnlA2RHha+z5wB6hM=
+			5dEVvctJ3agZoi5zk0KPIvmD3nSpe6/ywSFCP+kfrDE=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.Shared.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			j83B6HLobVpD6YOJHfXDCBov9ptk+f9T2A2mEEGKQTQ=
+			FEcEakv3Yi3tRvsAhaeLwaZywPAFynsK0tr6eDCFAIY=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.Shared.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			l8Nxw+NNDBbLU5M1w7deqmJHVPfuZoX1RwABGWlmSCk=
+			deLl9WX0BOOBoyhUppOcjK1Di319NUq1FYOC1Zn5Yww=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.AspNetCore.Connections.Abstractions.dll</key>
@@ -198,7 +198,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			H7/dXIuEMYDoJGrI8tinNRWkp3gyaYJPaAn57Ltux5Y=
+			LLFrgtuVPubH7kgmy/+ur6m4idYnIXgRkZis6PuoYC8=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.Extensions.Options.dll</key>
@@ -562,14 +562,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			hiBcCuUfz24hxHvtSMGIGYQjNUekZB1W+IvA7h57dIU=
+			aPoIQxX4PIyDCwZhIN5/36f9txkPIIWRv5rxqltb/dY=
 			</data>
 		</dict>
 		<key>MonoBundle/System.Private.CoreLib.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			BSa1PMc+pLEghzQTdQLW3T+BJsL1q2dISGLAeBgKkKg=
+			rH90fDNFhTsxtbaGNG2iAYPEaKcx1U109YCHLUQF3+c=
 			</data>
 		</dict>
 		<key>MonoBundle/System.Private.Uri.dll</key>
@@ -646,7 +646,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			fZ+m9vRTPzKlh2zMBcS8SAEMg+B+7Ci0t9j+PkQsVYw=
+			qqKHsbDvMgZEcgu1rHeemMjFACaFwuSDMPmXSkXdhkI=
 			</data>
 		</dict>
 		<key>MonoBundle/System.Security.Claims.dll</key>
@@ -1045,7 +1045,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			O5IQBl5HqQtC8bsVRF/ML9Ajezrtwb1JReotng0tg4I=
+			e+dlkFpTLf5otNOH7xT9sw7PZgUs/ivTJZINge1n99s=
 			</data>
 		</dict>
 		<key>Resources/MauiInfo.plist</key>
