@@ -262,6 +262,7 @@
     <_ReferencesLinkerFlags Include="-u_SystemNative_SysLog" />
     <_ReferencesLinkerFlags Include="-u_SystemNative_Unlink" />
     <_ReferencesLinkerFlags Include="-u_SystemNative_GetGroups" />
+    <_ReferencesLinkerFlags Include="-u_SystemNative_SearchPath" />
     <_ReferencesLinkerFlags Include="-u_SystemNative_SearchPath_TempDirectory" />
     <_ReferencesLinkerFlags Include="-u_SystemNative_iOSSupportVersion" />
     <_ReferencesLinkerFlags Include="-u_xamarin_release_managed_ref" />

@@ -1,5 +1,6 @@
 using ConnectHub.App.Services;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Diagnostics;
 
 namespace ConnectHub.App.ViewModels
@@ -57,74 +58,65 @@ namespace ConnectHub.App.ViewModels
         }
 
         [RelayCommand]
-        private async Task LoginAsync()
+        public async Task LoginAsync()
         {
-            Debug.WriteLine("=== Login Attempt Started ===");
-            Debug.WriteLine($"Email: {Email}");
-            Debug.WriteLine($"Password length: {(Password?.Length ?? 0)}");
-
-            if (string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password))
-            {
-                Debug.WriteLine("[WARNING] Login attempted with empty credentials");
-                await Application.Current.MainPage.DisplayAlert("Error", "Please enter email and password", "OK");
-                return;
-            }
-
             try
             {
+                Debug.WriteLine("Starting login process...");
+                if (IsLoading)
+                    return;
+
+                if (string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password))
+                {
+                    await Shell.Current.DisplayAlert("Error", "Please fill in all fields", "OK");
+                    return;
+                }
+
                 IsLoading = true;
                 Debug.WriteLine("Calling API for login...");
+                
                 var token = await _apiService.LoginAsync(Email, Password);
-                Debug.WriteLine($"Login API response received. Token empty: {string.IsNullOrEmpty(token)}");
                 
                 if (!string.IsNullOrEmpty(token))
                 {
                     Debug.WriteLine("Login successful, storing token...");
-                    Preferences.Default.Set("auth_token", token);
-                    _apiService.Token = token;
-
-                    Debug.WriteLine("Attempting post-login navigation...");
-                    if (Application.Current?.MainPage is AppShell appShell)
+                    Preferences.Set("auth_token", token);
+                    _apiService.Token = token; // Set token in API service
+                    
+                    // Ensure we're on the main thread for UI updates
+                    await MainThread.InvokeOnMainThreadAsync(async () =>
                     {
-                        Debug.WriteLine("Updating AppShell UI...");
-                        appShell.ShowLogoutButton();
-                        Debug.WriteLine("Navigating to feed...");
-                        await Shell.Current.GoToAsync("//main/feed");
-                        Debug.WriteLine("Navigation to feed successful");
-                    }
-                    else
-                    {
-                        Debug.WriteLine("[ERROR] MainPage is not AppShell");
-                        await Application.Current.MainPage.DisplayAlert("Error", "Navigation failed", "OK");
-                    }
+                        try
+                        {
+                            Debug.WriteLine("Attempting to navigate to feed page...");
+                            await _navigationService.NavigateToAsync("//main/feed");
+                            Debug.WriteLine("Navigation successful");
+                        }
+                        catch (Exception navEx)
+                        {
+                            Debug.WriteLine($"Navigation failed: {navEx.Message}");
+                            Debug.WriteLine($"Stack trace: {navEx.StackTrace}");
+                            await Shell.Current.DisplayAlert("Navigation Error", 
+                                "Unable to navigate after login. Please try again.", "OK");
+                            throw;
+                        }
+                    });
                 }
                 else
                 {
-                    Debug.WriteLine("[ERROR] Login returned empty token");
-                    await Application.Current.MainPage.DisplayAlert("Error", "Invalid login credentials", "OK");
+                    Debug.WriteLine("Login failed - invalid response");
+                    await Shell.Current.DisplayAlert("Error", "Invalid email or password", "OK");
                 }
-            }
-            catch (HttpRequestException ex)
-            {
-                Debug.WriteLine($"[ERROR] Login HTTP error: {ex.Message}");
-                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
-                await Application.Current.MainPage.DisplayAlert("Error", "Unable to connect to the server. Please check your internet connection.", "OK");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[ERROR] Unexpected login error: {ex.Message}");
+                Debug.WriteLine($"Login error: {ex.Message}");
                 Debug.WriteLine($"Stack trace: {ex.StackTrace}");
-                if (ex.InnerException != null)
-                {
-                    Debug.WriteLine($"Inner exception: {ex.InnerException.Message}");
-                    Debug.WriteLine($"Inner exception stack trace: {ex.InnerException.StackTrace}");
-                }
-                await Application.Current.MainPage.DisplayAlert("Error", "An unexpected error occurred during login. Please try again.", "OK");
+                await Shell.Current.DisplayAlert("Error", "An error occurred during login", "OK");
             }
             finally
             {
                 IsLoading = false;
-                Debug.WriteLine("=== Login Attempt Completed ===");
             }
         }
     }

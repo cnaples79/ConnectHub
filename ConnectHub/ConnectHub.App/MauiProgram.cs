@@ -65,7 +65,7 @@ public static class MauiProgram
             Debug.WriteLine("Registering ViewModels...");
             builder.Services.AddTransient<LoginViewModel>();
             builder.Services.AddTransient<RegisterViewModel>();
-            builder.Services.AddTransient<FeedViewModel>();
+            builder.Services.AddSingleton<FeedViewModel>();
             builder.Services.AddTransient<ChatViewModel>();
             builder.Services.AddTransient<ProfileViewModel>();
             builder.Services.AddTransient<NewPostViewModel>();
@@ -75,7 +75,7 @@ public static class MauiProgram
             Debug.WriteLine("Registering Views...");
             builder.Services.AddTransient<LoginPage>();
             builder.Services.AddTransient<RegisterPage>();
-            builder.Services.AddTransient<FeedPage>();
+            builder.Services.AddSingleton<FeedPage>();
             builder.Services.AddTransient<ChatPage>();
             builder.Services.AddTransient<ProfilePage>();
             builder.Services.AddTransient<NewPostPage>();

@@ -10,7 +10,7 @@
 		</data>
 		<key>Resources/Assets.car</key>
 		<data>
-		KP7XVzTAZAZi+v7zDVF2wQoLwNo=
+		kY7WVvZHxxqOGghP3vwlgafXmX4=
 		</data>
 		<key>Resources/MauiInfo.plist</key>
 		<data>
@@ -51,35 +51,35 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			GLi6j5ouUDOHGnVTbZjO3SNyCYPus0qVFlDCymYpz/c=
+			p3Qt322mqdFnEu9K2XaqiJ8G1LL4W0l3Ie+35zTArkg=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.App.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			4CJ+6qSLgBEZ56FSsuTmz3Xj2Kes1BsBNQ2sVJaBEAc=
+			uJLSATtYX4yJyb9nff0LTDuinWqcgipdE+VStS53ZcI=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.App.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			pXhhctpdBdZySQxuHbYtxsNY9I1b5GiraM7zsirPIqo=
+			MgJDqCpvXouBk7RbblVzOfzDBiYaLWhmq7tb6R8iluc=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.Shared.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			jSclVs4lr4lD9HfGm4h80yS6zhEMcXk2MRDxOfk8r9g=
+			OumL7GkYWjgV9+BDx2ouccBX8FRm31/Dl1xi/pGg6To=
 			</data>
 		</dict>
 		<key>MonoBundle/ConnectHub.Shared.pdb</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			OLFbEiFSWCFkw1lKeZt0A+T+taBJ/lDCLiHtGD7JPBY=
+			km0CaUT0yrtXOuJN+Hoy5UIRYCMshUL5px2+TYquGGQ=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.AspNetCore.Connections.Abstractions.dll</key>
@@ -275,7 +275,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			RGyHQPUIvzT00+0bl2tfepyaJ0uX47Zfdlf9hq97s5c=
+			HjwXG9eTDuFGTemfMZmjhieNlwQSVI09Z2jmH0ZCi3o=
 			</data>
 		</dict>
 		<key>MonoBundle/Microsoft.Maui.Graphics.dll</key>
@@ -562,14 +562,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			aPoIQxX4PIyDCwZhIN5/36f9txkPIIWRv5rxqltb/dY=
+			hKZY9yMmrBLtH/rBUb/7OBbcmsnaXFKQuuh+egcoDcQ=
 			</data>
 		</dict>
 		<key>MonoBundle/System.Private.CoreLib.dll</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			rH90fDNFhTsxtbaGNG2iAYPEaKcx1U109YCHLUQF3+c=
+			Xl72GMG9it2CBp3KEeQrBrPLLY7O4dTW0n6om0SXIu4=
 			</data>
 		</dict>
 		<key>MonoBundle/System.Private.Uri.dll</key>
@@ -646,7 +646,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			qqKHsbDvMgZEcgu1rHeemMjFACaFwuSDMPmXSkXdhkI=
+			m22mQEgyP7HvZRHeHF5d8mm1d7+HlNCDsivBtD9dVgc=
 			</data>
 		</dict>
 		<key>MonoBundle/System.Security.Claims.dll</key>
@@ -1045,7 +1045,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			nC9GttljRa/wYl9uVRfqTfz//WrNWAn3hovX3wwZYTM=
+			WcyBHty90vbZuBACzyu+QplAvYhB8LkatTa6ny/gSfA=
 			</data>
 		</dict>
 		<key>Resources/MauiInfo.plist</key>

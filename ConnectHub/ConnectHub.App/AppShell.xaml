@@ -4,7 +4,8 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:views="clr-namespace:ConnectHub.App.Views"
-    Shell.FlyoutBehavior="Disabled">
+    Shell.FlyoutBehavior="Disabled"
+    Shell.NavBarIsVisible="True">
 
     <Shell.Resources>
         <ResourceDictionary>
@@ -34,22 +35,19 @@
         FlyoutItemIsVisible="False" />
 
     <!-- Main Flow -->
-    <TabBar Route="main">
-        <Tab Title="Feed">
+    <TabBar x:Name="MainTabBar" Route="main">
+        <Tab Title="Feed" Route="feed">
             <ShellContent 
-                Route="feed"
                 ContentTemplate="{DataTemplate views:FeedPage}" />
         </Tab>
         
-        <Tab Title="Chat">
+        <Tab Title="Chat" Route="chat">
             <ShellContent 
-                Route="chat"
                 ContentTemplate="{DataTemplate views:ChatPage}" />
         </Tab>
         
-        <Tab Title="Profile">
+        <Tab Title="Profile" Route="profile">
             <ShellContent 
-                Route="profile"
                 ContentTemplate="{DataTemplate views:ProfilePage}" />
         </Tab>
     </TabBar>

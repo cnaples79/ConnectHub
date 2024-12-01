@@ -1,4 +1,5 @@
 using ConnectHub.Shared.Models;
+using ConnectHub.Shared.DTOs;
 
 namespace ConnectHub.App.Services
 {
@@ -8,7 +9,7 @@ namespace ConnectHub.App.Services
         Task<string> LoginAsync(string email, string password);
         Task<bool> RegisterAsync(string username, string email, string password, string confirmPassword);
         Task<bool> LogoutAsync(int userId);
-        Task<List<Post>> GetFeedAsync(int skip, int take);
+        Task<List<PostDto>> GetFeedAsync(int page, int pageSize);
         Task<Post> CreatePostAsync(string content, Stream? imageStream = null, string? fileName = null, double? latitude = null, double? longitude = null);
         Task<bool> LikePostAsync(int postId);
         Task<bool> UnlikePostAsync(int postId);

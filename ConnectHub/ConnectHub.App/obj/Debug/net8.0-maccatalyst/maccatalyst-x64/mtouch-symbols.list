@@ -259,6 +259,7 @@ _SystemNative_LStat
 _SystemNative_SysLog
 _SystemNative_Unlink
 _SystemNative_GetGroups
+_SystemNative_SearchPath
 _SystemNative_SearchPath_TempDirectory
 _SystemNative_iOSSupportVersion
 _xamarin_release_managed_ref

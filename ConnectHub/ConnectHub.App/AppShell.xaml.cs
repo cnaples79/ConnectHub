@@ -61,7 +61,7 @@ namespace ConnectHub.App
                             Debug.WriteLine("Updating UI state...");
                             UpdateUIState(true);
                             Debug.WriteLine("Navigating to feed...");
-                            Current.GoToAsync("///main/feed");
+                            Current.GoToAsync("///feed");
                             Debug.WriteLine("Navigation completed");
                         }
                         catch (Exception ex)
@@ -97,8 +97,12 @@ namespace ConnectHub.App
             {
                 Debug.WriteLine("Registering routes...");
                 
-                // Register all routes that aren't part of the shell structure
+                // Register all routes
+                Routing.RegisterRoute("login", typeof(LoginPage));
                 Routing.RegisterRoute("register", typeof(RegisterPage));
+                Routing.RegisterRoute("feed", typeof(FeedPage));
+                Routing.RegisterRoute("chat", typeof(ChatPage));
+                Routing.RegisterRoute("profile", typeof(ProfilePage));
                 Routing.RegisterRoute("post/create", typeof(NewPostPage));
                 Routing.RegisterRoute("post/comments", typeof(CommentsPage));
                 
@@ -106,7 +110,8 @@ namespace ConnectHub.App
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error registering routes: {ex}");
+                Debug.WriteLine($"Error registering routes: {ex.Message}");
+                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
                 throw;
             }
         }

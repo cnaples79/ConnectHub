@@ -40,28 +40,34 @@ namespace ConnectHub.App.Services
 
         public ApiService(IConfiguration configuration)
         {
+            Debug.WriteLine("Initializing ApiService...");
             _configuration = configuration;
+            var apiBaseUrl = _configuration["ApiBaseUrl"];
+            Debug.WriteLine($"API Base URL from configuration: {apiBaseUrl}");
+            
             _httpClient = new HttpClient
             {
-                BaseAddress = new Uri(_configuration["ApiBaseUrl"] ?? "https://localhost:5001/")
+                BaseAddress = new Uri(apiBaseUrl ?? "http://localhost:5000/")
             };
+            Debug.WriteLine($"HttpClient BaseAddress set to: {_httpClient.BaseAddress}");
 
             _jsonOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             };
 
-            var localAppData = FileSystem.AppDataDirectory;
-            _logFilePath = Path.Combine(localAppData, "connecthub_login.log");
-            Debug.WriteLine($"Log file will be created at: {_logFilePath}");
-
             try
             {
+                var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                var logDirectory = Path.Combine(documentsPath, "ConnectHub", "Logs");
+                _logFilePath = Path.Combine(logDirectory, "connecthub_login.log");
+                Debug.WriteLine($"Log file will be created at: {_logFilePath}");
+
                 // Create the directory if it doesn't exist
-                var directory = Path.GetDirectoryName(_logFilePath);
-                if (!Directory.Exists(directory) && directory != null)
+                if (!Directory.Exists(logDirectory))
                 {
-                    Directory.CreateDirectory(directory);
+                    Directory.CreateDirectory(logDirectory);
+                    Debug.WriteLine($"Created log directory: {logDirectory}");
                 }
                 
                 // Test write to the log file
@@ -81,6 +87,7 @@ namespace ConnectHub.App.Services
                     TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
                     onRetry: (exception, timeSpan, retryCount, context) =>
                     {
+                        Debug.WriteLine($"Retry {retryCount} after {timeSpan.TotalSeconds} seconds due to {exception.Exception.Message}");
                         LogToFile($"Retry {retryCount} after {timeSpan.TotalSeconds} seconds due to {exception.Exception.Message}");
                     });
         }
@@ -91,7 +98,7 @@ namespace ConnectHub.App.Services
             {
                 var logMessage = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} - {message}{Environment.NewLine}";
                 File.AppendAllText(_logFilePath, logMessage);
-                Debug.WriteLine($"Logged message: {message}");
+                Debug.WriteLine($"Successfully logged to file: {message}");
             }
             catch (Exception ex)
             {
@@ -103,6 +110,9 @@ namespace ConnectHub.App.Services
 
         public async Task<string> LoginAsync(string email, string password)
         {
+            Debug.WriteLine("=== Login Attempt Started ===");
+            Debug.WriteLine($"Base Address: {_httpClient.BaseAddress}");
+            
             try
             {
                 LogToFile("=== Login Attempt Started ===");
@@ -110,22 +120,29 @@ namespace ConnectHub.App.Services
                 
                 var loginData = new { email, password };
                 var json = JsonConvert.SerializeObject(loginData);
+                Debug.WriteLine("Login data serialized (email hidden for security)");
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 
                 LogToFile("Sending login request...");
+                Debug.WriteLine("Sending login request...");
+                
                 var response = await _retryPolicy.ExecuteAsync(async () =>
                 {
                     var request = new HttpRequestMessage(HttpMethod.Post, "api/auth/login")
                     {
                         Content = content
                     };
+                    Debug.WriteLine($"Request URI: {request.RequestUri}");
                     LogToFile($"Request URI: {request.RequestUri}");
+                    
                     var resp = await _httpClient.SendAsync(request);
+                    Debug.WriteLine($"Response Status Code: {resp.StatusCode}");
                     LogToFile($"Response Status Code: {resp.StatusCode}");
                     return resp;
                 });
 
                 var responseContent = await response.Content.ReadAsStringAsync();
+                Debug.WriteLine("Received response content");
                 LogToFile($"Response Content: {responseContent}");
 
                 if (response.IsSuccessStatusCode)
@@ -135,18 +152,21 @@ namespace ConnectHub.App.Services
                         var result = JsonConvert.DeserializeObject<AuthResponseDto>(responseContent);
                         if (result?.Token != null)
                         {
+                            Debug.WriteLine("Successfully parsed authentication response");
                             LogToFile("Successfully parsed authentication response");
                             Token = result.Token;
                             return result.Token;
                         }
                         else
                         {
+                            Debug.WriteLine("ERROR: Token was null in response");
                             LogToFile("ERROR: Token was null in response");
                             throw new InvalidOperationException("Invalid response format: Token was null");
                         }
                     }
                     catch (Newtonsoft.Json.JsonException ex)
                     {
+                        Debug.WriteLine($"ERROR: Failed to parse response: {ex.Message}");
                         LogToFile($"ERROR: Failed to parse response: {ex.Message}");
                         throw new InvalidOperationException($"Failed to parse login response: {ex.Message}");
                     }
@@ -154,19 +174,25 @@ namespace ConnectHub.App.Services
 
                 if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
+                    Debug.WriteLine("ERROR: Unauthorized: Invalid credentials");
                     LogToFile("ERROR: Unauthorized: Invalid credentials");
                     throw new UnauthorizedAccessException("Invalid email or password");
                 }
 
+                Debug.WriteLine($"ERROR: Unexpected response: {response.StatusCode}");
                 LogToFile($"ERROR: Unexpected response: {response.StatusCode}");
                 throw new HttpRequestException($"Login failed with status code {response.StatusCode}: {responseContent}");
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"ERROR: Login exception: {ex.GetType().Name}: {ex.Message}");
+                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
                 LogToFile($"ERROR: Login exception: {ex.GetType().Name}: {ex.Message}");
                 LogToFile($"Stack trace: {ex.StackTrace}");
                 if (ex.InnerException != null)
                 {
+                    Debug.WriteLine($"Inner exception: {ex.InnerException.Message}");
+                    Debug.WriteLine($"Inner exception stack trace: {ex.InnerException.StackTrace}");
                     LogToFile($"Inner exception: {ex.InnerException.Message}");
                     LogToFile($"Inner exception stack trace: {ex.InnerException.StackTrace}");
                 }
@@ -174,6 +200,7 @@ namespace ConnectHub.App.Services
             }
             finally
             {
+                Debug.WriteLine("=== Login Attempt Completed ===");
                 LogToFile("=== Login Attempt Completed ===");
             }
         }
@@ -215,11 +242,48 @@ namespace ConnectHub.App.Services
             }
         }
 
-        public async Task<List<Post>> GetFeedAsync(int skip, int take)
+        public async Task<List<PostDto>> GetFeedAsync(int page, int pageSize)
         {
-            var response = await _httpClient.GetAsync($"api/posts?skip={skip}&take={take}");
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<List<Post>>(_jsonOptions) ?? new List<Post>();
+            try
+            {
+                Debug.WriteLine($"Getting feed for page {page}, size {pageSize}");
+                var skip = (page - 1) * pageSize;
+                var response = await _httpClient.GetAsync($"api/posts?skip={skip}&take={pageSize}");
+                response.EnsureSuccessStatusCode();
+                
+                var posts = await response.Content.ReadFromJsonAsync<List<Post>>(_jsonOptions) ?? new List<Post>();
+                return posts.Select(p => new PostDto
+                {
+                    Id = p.Id.ToString(),
+                    Content = p.Content,
+                    CreatedAt = p.CreatedAt,
+                    UpdatedAt = p.UpdatedAt,
+                    LikesCount = p.LikesCount,
+                    CommentsCount = p.CommentsCount,
+                    IsLikedByCurrentUser = p.IsLikedByCurrentUser,
+                    LocationName = p.LocationName,
+                    Latitude = p.Latitude,
+                    Longitude = p.Longitude,
+                    ImageUrl = p.ImageUrl,
+                    User = p.User != null ? new UserDto 
+                    {
+                        Id = p.User.Id.ToString(),
+                        Username = p.User.Username,
+                        Email = p.User.Email,
+                        ProfileImageUrl = p.User.ProfileImageUrl,
+                        Bio = p.User.Bio,
+                        CreatedAt = p.User.CreatedAt,
+                        FollowersCount = p.User.Followers.Count,
+                        FollowingCount = p.User.Following.Count,
+                        IsFollowedByCurrentUser = false // This should be set based on the actual relationship
+                    } : null
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error getting feed: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task<Post> CreatePostAsync(string content, Stream? imageStream = null, string? fileName = null, double? latitude = null, double? longitude = null)
