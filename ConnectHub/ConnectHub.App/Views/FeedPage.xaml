@@ -177,9 +177,13 @@
         <!-- New Post Button -->
         <Button Grid.Row="3"
                 Text="New Post"
-                Command="{Binding NavigateToNewPostCommand}"
-                Style="{StaticResource PrimaryButton}"
-                Margin="20"/>
+                Command="{Binding CreatePostCommand}"
+                BackgroundColor="#2196F3"
+                TextColor="White"
+                FontAttributes="Bold"
+                Margin="15"
+                HeightRequest="50"
+                CornerRadius="25"/>
 
         <!-- Loading Indicator -->
         <ActivityIndicator Grid.RowSpan="4"

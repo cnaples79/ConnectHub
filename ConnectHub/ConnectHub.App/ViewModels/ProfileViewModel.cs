@@ -11,7 +11,7 @@ namespace ConnectHub.App.ViewModels
     {
         private readonly IApiService _apiService;
         private readonly INavigationService _navigationService;
-        private int _currentUserId;
+        private readonly IPreferences _preferences;
 
         [ObservableProperty]
         private User? _user;
@@ -25,12 +25,12 @@ namespace ConnectHub.App.ViewModels
         [ObservableProperty]
         private string _errorMessage = string.Empty;
 
-        public ProfileViewModel(IApiService apiService, INavigationService navigationService, int currentUserId)
+        public ProfileViewModel(IApiService apiService, INavigationService navigationService, IPreferences preferences)
         {
             Debug.WriteLine("Initializing ProfileViewModel...");
             _apiService = apiService;
             _navigationService = navigationService;
-            _currentUserId = currentUserId;
+            _preferences = preferences;
             Title = "Profile";
             InitializeAsync();
         }
@@ -42,11 +42,17 @@ namespace ConnectHub.App.ViewModels
                 IsLoading = true;
                 ErrorMessage = string.Empty;
 
-                Debug.WriteLine("Loading user profile...");
-                User = await _apiService.GetUserProfileAsync(_currentUserId);
+                var userId = _preferences.Get<int>("user_id", 0);
+                if (userId == 0)
+                {
+                    throw new Exception("User ID not found");
+                }
+
+                Debug.WriteLine($"Loading profile for user {userId}...");
+                User = await _apiService.GetUserProfileAsync(userId);
 
                 Debug.WriteLine("Loading user posts...");
-                var postDtos = await _apiService.GetUserPostsAsync(User.Id, 1, 10);
+                var postDtos = await _apiService.GetUserPostsAsync(userId, 1, 10);
                 UserPosts.Clear();
                 foreach (var postDto in postDtos)
                 {
@@ -55,16 +61,18 @@ namespace ConnectHub.App.ViewModels
                         Id = int.Parse(postDto.Id),
                         Content = postDto.Content,
                         CreatedAt = postDto.CreatedAt,
-                        UserId = User.Id,
+                        UserId = userId,
                         LikesCount = postDto.LikesCount
                     };
                     UserPosts.Add(post);
                 }
+                Debug.WriteLine($"Loaded {UserPosts.Count} posts");
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error loading profile: {ex.Message}");
                 ErrorMessage = "Unable to load profile. Please try again later.";
+                await Application.Current.MainPage.DisplayAlert("Error", ErrorMessage, "OK");
             }
             finally
             {
@@ -106,7 +114,7 @@ namespace ConnectHub.App.ViewModels
             var logout = await Application.Current.MainPage.DisplayAlert("Logout", "Are you sure you want to logout?", "Yes", "No");
             if (logout)
             {
-                await _apiService.LogoutAsync(_currentUserId);
+                await _apiService.LogoutAsync(_preferences.Get<int>("user_id", 0));
                 await _navigationService.NavigateToAsync("///login");
             }
         }

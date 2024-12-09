@@ -121,21 +121,23 @@ namespace ConnectHub.App
             try
             {
                 Debug.WriteLine("Handling logout...");
-                
-                // Clear the token
                 _preferences.Remove("auth_token");
-                _apiService.Token = null;
-
-                // Update UI and navigate
-                UpdateUIState(false);
-                await Current.GoToAsync("///login");
+                _preferences.Remove("user_id");
                 
+                // Remove logout button
+                if (ToolbarItems.Contains(_logoutButton))
+                {
+                    ToolbarItems.Remove(_logoutButton);
+                }
+
+                // Clear navigation stack and go to login
+                await Shell.Current.GoToAsync("//LoginPage");
                 Debug.WriteLine("Logout completed successfully");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error during logout: {ex}");
-                await DisplayAlert("Error", "Failed to logout", "OK");
+                Debug.WriteLine($"Error during logout: {ex.Message}");
+                await DisplayAlert("Error", "Failed to logout. Please try again.", "OK");
             }
         }
 
@@ -172,8 +174,22 @@ namespace ConnectHub.App
 
         public void ShowLogoutButton()
         {
-            Debug.WriteLine("ShowLogoutButton called");
-            UpdateUIState(true);
+            try
+            {
+                Debug.WriteLine("Showing logout button...");
+                if (!ToolbarItems.Contains(_logoutButton))
+                {
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        ToolbarItems.Add(_logoutButton);
+                    });
+                    Debug.WriteLine("Logout button added to toolbar");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error showing logout button: {ex.Message}");
+            }
         }
 
         public void HideLogoutButton()

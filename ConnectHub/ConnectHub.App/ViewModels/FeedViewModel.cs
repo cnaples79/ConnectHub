@@ -194,5 +194,20 @@ namespace ConnectHub.App.ViewModels
                 Debug.WriteLine($"Error navigating to new post: {ex.Message}");
             }
         }
+
+        [RelayCommand]
+        private async Task CreatePost()
+        {
+            try
+            {
+                Debug.WriteLine("Navigating to create post page...");
+                await _navigationService.NavigateToAsync("CreatePostPage");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error navigating to create post: {ex.Message}");
+                await Application.Current.MainPage.DisplayAlert("Error", "Unable to open create post page. Please try again.", "OK");
+            }
+        }
     }
 }

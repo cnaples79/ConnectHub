@@ -47,23 +47,27 @@ namespace ConnectHub.App.ViewModels
         }
 
         [RelayCommand]
-        private async Task LoadMessages()
+        private async Task SendMessage()
         {
-            if (IsLoading) return;
-            
-            IsLoading = true;
+            if (string.IsNullOrWhiteSpace(Message))
+                return;
+
             try
             {
-                var messages = await _apiService.GetChatHistoryAsync();
-                Messages.Clear();
-                foreach (var message in messages)
-                {
-                    Messages.Add(message);
-                }
+                IsLoading = true;
+                Debug.WriteLine($"Sending message: {Message}");
+                
+                await _apiService.SendMessageAsync(Message);
+                Message = string.Empty;
+                
+                // Reload messages to show the new one
+                await LoadMessages();
+                Debug.WriteLine("Message sent successfully");
             }
             catch (Exception ex)
             {
-                await Application.Current.MainPage.DisplayAlert("Error", "Failed to load chat history", "OK");
+                Debug.WriteLine($"Error sending message: {ex.Message}");
+                await Application.Current.MainPage.DisplayAlert("Error", "Failed to send message. Please try again.", "OK");
             }
             finally
             {
@@ -72,20 +76,33 @@ namespace ConnectHub.App.ViewModels
         }
 
         [RelayCommand]
-        private async Task SendMessageAsync()
+        private async Task LoadMessages()
         {
-            if (string.IsNullOrWhiteSpace(Message))
-                return;
+            if (IsBusy) return;
 
             try
             {
-                await _apiService.SendMessageAsync(Message);
-                Message = string.Empty;
-                await LoadMessages();
+                IsBusy = true;
+                IsLoading = true;
+                Debug.WriteLine("Loading chat messages...");
+
+                var messages = await _apiService.GetChatHistoryAsync();
+                Messages.Clear();
+                foreach (var message in messages)
+                {
+                    Messages.Add(message);
+                }
+                Debug.WriteLine($"Loaded {messages.Count} messages");
             }
             catch (Exception ex)
             {
-                await Application.Current.MainPage.DisplayAlert("Error", "Failed to send message", "OK");
+                Debug.WriteLine($"Error loading messages: {ex.Message}");
+                await Application.Current.MainPage.DisplayAlert("Error", "Failed to load messages. Please try again.", "OK");
+            }
+            finally
+            {
+                IsBusy = false;
+                IsLoading = false;
             }
         }
     }
