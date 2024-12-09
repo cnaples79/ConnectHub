@@ -25,6 +25,9 @@ namespace ConnectHub.App.ViewModels
         [ObservableProperty]
         private string _errorMessage = string.Empty;
 
+        public int FollowersCount => User?.Followers?.Count ?? 0;
+        public int FollowingCount => User?.Following?.Count ?? 0;
+
         public ProfileViewModel(IApiService apiService, INavigationService navigationService, IPreferences preferences)
         {
             Debug.WriteLine("Initializing ProfileViewModel...");

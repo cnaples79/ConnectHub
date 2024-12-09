@@ -4,64 +4,87 @@
              x:Class="ConnectHub.App.Views.ChatPage"
              xmlns:viewmodel="clr-namespace:ConnectHub.App.ViewModels"
              xmlns:model="clr-namespace:ConnectHub.Shared.Models;assembly=ConnectHub.Shared"
-             x:DataType="viewmodel:ChatViewModel">
+             x:DataType="viewmodel:ChatViewModel"
+             BackgroundColor="#121212"
+             Title="Chat">
 
-    <Grid RowDefinitions="*,Auto"
-          Padding="10">
-        
+    <Grid RowDefinitions="*,Auto" Padding="10">
         <RefreshView Grid.Row="0"
-                     Command="{Binding LoadMessagesCommand}"
-                     IsRefreshing="{Binding IsLoading}">
-            
+                    Command="{Binding LoadMessagesCommand}"
+                    IsRefreshing="{Binding IsLoading}">
             <CollectionView ItemsSource="{Binding Messages}"
-                          ItemsLayout="VerticalList">
+                          ItemsLayout="VerticalList"
+                          RemainingItemsThreshold="2">
                 <CollectionView.EmptyView>
-                    <StackLayout HorizontalOptions="Center"
-                               VerticalOptions="Center">
+                    <StackLayout HorizontalOptions="Center" VerticalOptions="Center">
                         <Label Text="No messages yet"
-                               TextColor="{StaticResource Gray500}"
-                               FontSize="16"/>
+                               TextColor="#757575"
+                               FontSize="16"
+                               HorizontalOptions="Center"/>
                     </StackLayout>
                 </CollectionView.EmptyView>
-                
+
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="model:ChatMessage">
-                        <Grid Padding="10">
-                            <Frame BorderColor="{StaticResource Gray200}"
-                                   CornerRadius="10"
-                                   Padding="10">
-                                <StackLayout>
-                                    <Label Text="{Binding Sender.Username}"
-                                           FontAttributes="Bold"
-                                           TextColor="{StaticResource Primary}"/>
-                                    <Label Text="{Binding Content}"
-                                           TextColor="{StaticResource Gray900}"/>
-                                    <Label Text="{Binding CreatedAt, StringFormat='{0:g}'}"
-                                           FontSize="12"
-                                           TextColor="{StaticResource Gray500}"
-                                           HorizontalOptions="End"/>
-                                </StackLayout>
-                            </Frame>
-                        </Grid>
+                        <Frame Margin="5"
+                               Padding="15,10"
+                               BackgroundColor="#1E1E1E"
+                               BorderColor="Transparent"
+                               CornerRadius="10"
+                               HasShadow="False">
+                            <Grid RowDefinitions="Auto,Auto" RowSpacing="5">
+                                <Label Grid.Row="0"
+                                       Text="{Binding Sender.Username}"
+                                       TextColor="#2196F3"
+                                       FontSize="14"
+                                       FontAttributes="Bold"/>
+                                <Label Grid.Row="1"
+                                       Text="{Binding Content}"
+                                       TextColor="White"
+                                       FontSize="16"/>
+                            </Grid>
+                        </Frame>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
         </RefreshView>
 
-        <Grid Grid.Row="1"
-              ColumnDefinitions="*,Auto"
-              Padding="5">
+        <!-- Message Input Area -->
+        <Grid Grid.Row="1" 
+              ColumnDefinitions="*,Auto" 
+              Padding="0,10,0,0"
+              ColumnSpacing="10">
             
-            <Entry Grid.Column="0"
-                   Text="{Binding Message}"
-                   Placeholder="Type a message..."
-                   ReturnType="Send"
-                   ReturnCommand="{Binding SendMessageCommand}"/>
-            
+            <Frame Grid.Column="0"
+                   BackgroundColor="#1E1E1E"
+                   BorderColor="Transparent"
+                   CornerRadius="20"
+                   Padding="15,0">
+                <Entry Text="{Binding Message}"
+                       TextColor="White"
+                       PlaceholderColor="#757575"
+                       Placeholder="Type a message..."
+                       VerticalOptions="Center"
+                       HeightRequest="40"/>
+            </Frame>
+
             <Button Grid.Column="1"
                     Text="Send"
                     Command="{Binding SendMessageCommand}"
-                    Style="{StaticResource PrimaryButton}"/>
+                    BackgroundColor="#2196F3"
+                    TextColor="White"
+                    CornerRadius="20"
+                    HeightRequest="40"
+                    WidthRequest="80"
+                    FontAttributes="Bold"/>
         </Grid>
+
+        <!-- Loading Indicator -->
+        <ActivityIndicator Grid.RowSpan="2"
+                          IsRunning="{Binding IsLoading}"
+                          IsVisible="{Binding IsLoading}"
+                          Color="#2196F3"
+                          HorizontalOptions="Center"
+                          VerticalOptions="Center"/>
     </Grid>
 </ContentPage>

@@ -1,68 +1,167 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="ConnectHub.App.Views.ProfilePage"
              xmlns:viewmodel="clr-namespace:ConnectHub.App.ViewModels"
-             x:DataType="viewmodel:ProfileViewModel">
+             xmlns:model="clr-namespace:ConnectHub.Shared.Models;assembly=ConnectHub.Shared"
+             x:Class="ConnectHub.App.Views.ProfilePage"
+             x:DataType="viewmodel:ProfileViewModel"
+             BackgroundColor="#121212"
+             Title="Profile">
 
-    <ScrollView>
-        <Grid RowDefinitions="Auto,Auto,*"
-              Padding="20">
-
-            <ActivityIndicator Grid.RowSpan="3"
-                             IsRunning="{Binding IsLoading}"
-                             IsVisible="{Binding IsLoading}"
-                             HorizontalOptions="Center"
-                             VerticalOptions="Center"/>
-
-            <VerticalStackLayout Grid.Row="0"
-                               Spacing="10"
-                               IsVisible="{Binding User, Converter={StaticResource NotNullConverter}}">
+    <RefreshView Command="{Binding RefreshProfileCommand}"
+                 IsRefreshing="{Binding IsLoading}">
+        <ScrollView>
+            <Grid RowDefinitions="Auto,Auto,*" 
+                  RowSpacing="20" 
+                  Padding="20">
                 
-                <Image Source="{Binding User.ProfileImageUrl}"
-                       HeightRequest="120"
-                       WidthRequest="120"
-                       Aspect="AspectFill"
-                       HorizontalOptions="Center">
-                    <Image.Clip>
-                        <EllipseGeometry Center="60,60"
-                                        RadiusX="60"
-                                        RadiusY="60"/>
-                    </Image.Clip>
-                </Image>
+                <!-- Profile Header -->
+                <Frame Grid.Row="0"
+                       BackgroundColor="#1E1E1E"
+                       BorderColor="Transparent"
+                       CornerRadius="15"
+                       Padding="20"
+                       Margin="0,10">
+                    <Grid RowDefinitions="Auto,Auto" 
+                          ColumnDefinitions="Auto,*"
+                          RowSpacing="10"
+                          ColumnSpacing="15">
+                        
+                        <!-- Profile Picture -->
+                        <Frame Grid.Row="0" 
+                               Grid.RowSpan="2"
+                               Grid.Column="0"
+                               BackgroundColor="#2196F3"
+                               CornerRadius="40"
+                               HeightRequest="80"
+                               WidthRequest="80"
+                               Padding="0"
+                               IsClippedToBounds="True">
+                            <Image Source="{Binding User.ProfileImageUrl}"
+                                   Aspect="AspectFill"
+                                   HeightRequest="80"
+                                   WidthRequest="80"/>
+                        </Frame>
 
-                <Label Text="{Binding User.Username}"
-                       FontSize="24"
-                       FontAttributes="Bold"
-                       HorizontalOptions="Center"/>
+                        <!-- Username -->
+                        <Label Grid.Row="0"
+                               Grid.Column="1"
+                               Text="{Binding User.Username}"
+                               TextColor="White"
+                               FontSize="24"
+                               FontAttributes="Bold"/>
 
-                <Label Text="{Binding User.Email}"
-                       TextColor="{StaticResource Gray500}"
-                       HorizontalOptions="Center"/>
-            </VerticalStackLayout>
+                        <!-- Bio -->
+                        <Label Grid.Row="1"
+                               Grid.Column="1"
+                               Text="{Binding User.Bio}"
+                               TextColor="#757575"
+                               FontSize="14"/>
+                    </Grid>
+                </Frame>
 
-            <VerticalStackLayout Grid.Row="1"
-                               Spacing="20"
-                               Margin="0,20"
-                               IsVisible="{Binding User, Converter={StaticResource NotNullConverter}}">
-                
-                <Entry Placeholder="Username"
-                       Text="{Binding User.Username}"/>
+                <!-- Stats -->
+                <Frame Grid.Row="1"
+                       BackgroundColor="#1E1E1E"
+                       BorderColor="Transparent"
+                       CornerRadius="15"
+                       Padding="20">
+                    <Grid ColumnDefinitions="*,*,*"
+                          ColumnSpacing="10">
+                        <VerticalStackLayout Grid.Column="0"
+                                           HorizontalOptions="Center">
+                            <Label Text="{Binding UserPosts.Count}"
+                                   TextColor="White"
+                                   FontSize="20"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"/>
+                            <Label Text="Posts"
+                                   TextColor="#757575"
+                                   FontSize="14"
+                                   HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
 
-                <Entry Placeholder="Bio"
-                       Text="{Binding User.Bio}"/>
+                        <VerticalStackLayout Grid.Column="1"
+                                           HorizontalOptions="Center">
+                            <Label Text="{Binding FollowersCount}"
+                                   TextColor="White"
+                                   FontSize="20"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"/>
+                            <Label Text="Followers"
+                                   TextColor="#757575"
+                                   FontSize="14"
+                                   HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
 
-                <Button Text="Update Profile"
-                        Command="{Binding UpdateProfileCommand}"
-                        Style="{StaticResource PrimaryButton}"/>
-            </VerticalStackLayout>
+                        <VerticalStackLayout Grid.Column="2"
+                                           HorizontalOptions="Center">
+                            <Label Text="{Binding FollowingCount}"
+                                   TextColor="White"
+                                   FontSize="20"
+                                   FontAttributes="Bold"
+                                   HorizontalOptions="Center"/>
+                            <Label Text="Following"
+                                   TextColor="#757575"
+                                   FontSize="14"
+                                   HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </Grid>
+                </Frame>
 
-            <Button Grid.Row="2"
-                    Text="Logout"
-                    Command="{Binding LogoutCommand}"
-                    Style="{StaticResource SecondaryButton}"
-                    VerticalOptions="End"/>
+                <!-- Posts -->
+                <CollectionView Grid.Row="2"
+                              ItemsSource="{Binding UserPosts}"
+                              SelectionMode="None">
+                    <CollectionView.EmptyView>
+                        <StackLayout HorizontalOptions="Center"
+                                   VerticalOptions="Center">
+                            <Label Text="No posts yet"
+                                   TextColor="#757575"
+                                   FontSize="16"
+                                   HorizontalOptions="Center"/>
+                        </StackLayout>
+                    </CollectionView.EmptyView>
 
-        </Grid>
-    </ScrollView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="model:Post">
+                            <Frame Margin="0,5,0,10"
+                                   Padding="15"
+                                   BackgroundColor="#1E1E1E"
+                                   BorderColor="Transparent"
+                                   CornerRadius="10">
+                                <Grid RowDefinitions="Auto,Auto,Auto"
+                                     RowSpacing="10">
+                                    <Label Grid.Row="0"
+                                           Text="{Binding Content}"
+                                           TextColor="White"
+                                           FontSize="16"/>
+                                    <Label Grid.Row="1"
+                                           Text="{Binding CreatedAt, StringFormat='{0:g}'}"
+                                           TextColor="#757575"
+                                           FontSize="12"/>
+                                    <Grid Grid.Row="2"
+                                          ColumnDefinitions="Auto,Auto"
+                                          ColumnSpacing="15">
+                                        <Label Grid.Column="0"
+                                               Text="{Binding LikesCount, StringFormat='{0} likes'}"
+                                               TextColor="#2196F3"
+                                               FontSize="14"/>
+                                    </Grid>
+                                </Grid>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <!-- Loading Indicator -->
+                <ActivityIndicator Grid.RowSpan="3"
+                                 IsRunning="{Binding IsLoading}"
+                                 IsVisible="{Binding IsLoading}"
+                                 Color="#2196F3"
+                                 HorizontalOptions="Center"
+                                 VerticalOptions="Center"/>
+            </Grid>
+        </ScrollView>
+    </RefreshView>
 </ContentPage>

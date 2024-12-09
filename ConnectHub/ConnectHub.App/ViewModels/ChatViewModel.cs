@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using ConnectHub.App.Services;
 using ConnectHub.Shared.Models;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Diagnostics;
 
 namespace ConnectHub.App.ViewModels
@@ -9,25 +10,18 @@ namespace ConnectHub.App.ViewModels
     public partial class ChatViewModel : BaseViewModel
     {
         private readonly IApiService _apiService;
-        private string _message;
+
+        [ObservableProperty]
+        private string _message = string.Empty;
+
+        [ObservableProperty]
         private bool _isLoading;
 
         public ObservableCollection<ChatMessage> Messages { get; } = new();
-        
-        public string Message
-        {
-            get => _message;
-            set => SetProperty(ref _message, value);
-        }
-
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
-        }
 
         public ChatViewModel(IApiService apiService)
         {
+            Debug.WriteLine("Initializing ChatViewModel...");
             _apiService = apiService;
             Title = "Chat";
         }
@@ -37,7 +31,7 @@ namespace ConnectHub.App.ViewModels
             try
             {
                 if (IsBusy) return;
-                await LoadMessages();
+                await LoadMessagesAsync();
             }
             catch (Exception ex)
             {
@@ -57,11 +51,13 @@ namespace ConnectHub.App.ViewModels
                 IsLoading = true;
                 Debug.WriteLine($"Sending message: {Message}");
                 
-                await _apiService.SendMessageAsync(Message);
-                Message = string.Empty;
+                var messageToSend = Message;
+                Message = string.Empty; // Clear input immediately for better UX
+                
+                await _apiService.SendMessageAsync(messageToSend);
                 
                 // Reload messages to show the new one
-                await LoadMessages();
+                await LoadMessagesAsync();
                 Debug.WriteLine("Message sent successfully");
             }
             catch (Exception ex)
@@ -78,6 +74,11 @@ namespace ConnectHub.App.ViewModels
         [RelayCommand]
         private async Task LoadMessages()
         {
+            await LoadMessagesAsync();
+        }
+
+        private async Task LoadMessagesAsync()
+        {
             if (IsBusy) return;
 
             try
@@ -87,11 +88,16 @@ namespace ConnectHub.App.ViewModels
                 Debug.WriteLine("Loading chat messages...");
 
                 var messages = await _apiService.GetChatHistoryAsync();
-                Messages.Clear();
-                foreach (var message in messages)
+                
+                MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    Messages.Add(message);
-                }
+                    Messages.Clear();
+                    foreach (var message in messages.OrderByDescending(m => m.CreatedAt))
+                    {
+                        Messages.Add(message);
+                    }
+                });
+                
                 Debug.WriteLine($"Loaded {messages.Count} messages");
             }
             catch (Exception ex)
