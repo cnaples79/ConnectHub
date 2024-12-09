@@ -321,11 +321,21 @@ namespace ConnectHub.App.Services
             return response.IsSuccessStatusCode;
         }
 
-        public async Task<List<Comment>> GetCommentsAsync(int postId)
+        public async Task<List<CommentDto>> GetCommentsAsync(int postId)
         {
-            var response = await _httpClient.GetAsync($"api/posts/{postId}/comments");
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<List<Comment>>(_jsonOptions) ?? new List<Comment>();
+            try
+            {
+                Debug.WriteLine($"Getting comments for post {postId}...");
+                var response = await _httpClient.GetAsync($"api/posts/{postId}/comments");
+                response.EnsureSuccessStatusCode();
+                var comments = await response.Content.ReadFromJsonAsync<List<CommentDto>>(_jsonOptions);
+                return comments ?? new List<CommentDto>();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error getting comments: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task<Comment> AddCommentAsync(int postId, string content)
@@ -350,18 +360,37 @@ namespace ConnectHub.App.Services
             return await response.Content.ReadFromJsonAsync<List<Post>>(_jsonOptions) ?? new List<Post>();
         }
 
-        public async Task<List<ChatMessage>> GetChatHistoryAsync(int userId)
+        public async Task<List<ChatMessage>> GetChatHistoryAsync()
         {
-            var response = await _httpClient.GetAsync($"api/chat/{userId}");
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<List<ChatMessage>>(_jsonOptions) ?? new List<ChatMessage>();
+            Debug.WriteLine("Getting chat history...");
+            try
+            {
+                var response = await _httpClient.GetAsync($"/api/chat/history");
+                response.EnsureSuccessStatusCode();
+                var messages = await response.Content.ReadFromJsonAsync<List<ChatMessage>>();
+                return messages ?? new List<ChatMessage>();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error getting chat history: {ex.Message}");
+                throw;
+            }
         }
 
-        public async Task SendMessageAsync(int receiverId, string content)
+        public async Task SendMessageAsync(string message)
         {
-            var message = new { ReceiverId = receiverId, Content = content };
-            var response = await _httpClient.PostAsJsonAsync("api/chat", message);
-            response.EnsureSuccessStatusCode();
+            Debug.WriteLine("Sending message...");
+            try
+            {
+                var content = new { Message = message };
+                var response = await _httpClient.PostAsJsonAsync("/api/chat/message", content);
+                response.EnsureSuccessStatusCode();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error sending message: {ex.Message}");
+                throw;
+            }
         }
 
         public async Task<bool> ReportPostAsync(int postId)
@@ -402,6 +431,23 @@ namespace ConnectHub.App.Services
                 return true;
             }
             return false;
+        }
+
+        public async Task<List<PostDto>> GetUserPostsAsync(int userId, int page, int pageSize)
+        {
+            try
+            {
+                Debug.WriteLine($"Getting posts for user {userId}...");
+                var response = await _httpClient.GetAsync($"api/users/{userId}/posts?page={page}&pageSize={pageSize}");
+                response.EnsureSuccessStatusCode();
+                var posts = await response.Content.ReadFromJsonAsync<List<PostDto>>(_jsonOptions);
+                return posts ?? new List<PostDto>();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error getting user posts: {ex.Message}");
+                throw;
+            }
         }
 
         public void Dispose()

@@ -89,6 +89,11 @@ namespace ConnectHub.App.ViewModels
                         try
                         {
                             Debug.WriteLine("Attempting to navigate to feed page...");
+                            // Show logout button and navigate to feed
+                            if (Application.Current?.MainPage is AppShell appShell)
+                            {
+                                appShell.ShowLogoutButton();
+                            }
                             await Shell.Current.GoToAsync("///feed");
                             Debug.WriteLine("Navigation successful");
                         }

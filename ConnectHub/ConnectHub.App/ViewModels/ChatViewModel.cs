@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using ConnectHub.App.Services;
 using ConnectHub.Shared.Models;
 using CommunityToolkit.Mvvm.Input;
+using System.Diagnostics;
 
 namespace ConnectHub.App.ViewModels
 {
@@ -10,7 +11,6 @@ namespace ConnectHub.App.ViewModels
         private readonly IApiService _apiService;
         private string _message;
         private bool _isLoading;
-        private int _currentUserId;
 
         public ObservableCollection<ChatMessage> Messages { get; } = new();
         
@@ -26,12 +26,24 @@ namespace ConnectHub.App.ViewModels
             set => SetProperty(ref _isLoading, value);
         }
 
-        public ChatViewModel(IApiService apiService, int currentUserId)
+        public ChatViewModel(IApiService apiService)
         {
             _apiService = apiService;
-            _currentUserId = currentUserId;
             Title = "Chat";
-            LoadMessages();
+        }
+
+        public async Task InitializeAsync()
+        {
+            try
+            {
+                if (IsBusy) return;
+                await LoadMessages();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in ChatViewModel InitializeAsync: {ex.Message}");
+                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+            }
         }
 
         [RelayCommand]
@@ -42,7 +54,7 @@ namespace ConnectHub.App.ViewModels
             IsLoading = true;
             try
             {
-                var messages = await _apiService.GetChatHistoryAsync(_currentUserId);
+                var messages = await _apiService.GetChatHistoryAsync();
                 Messages.Clear();
                 foreach (var message in messages)
                 {
@@ -67,7 +79,7 @@ namespace ConnectHub.App.ViewModels
 
             try
             {
-                await _apiService.SendMessageAsync(_currentUserId, Message);
+                await _apiService.SendMessageAsync(Message);
                 Message = string.Empty;
                 await LoadMessages();
             }

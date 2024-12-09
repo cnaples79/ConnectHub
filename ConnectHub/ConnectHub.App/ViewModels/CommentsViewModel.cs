@@ -41,8 +41,16 @@ public partial class CommentsViewModel : BaseViewModel
             IsBusy = true;
             var loadedComments = await _apiService.GetCommentsAsync(PostId);
             Comments.Clear();
-            foreach (var comment in loadedComments)
+            foreach (var commentDto in loadedComments)
             {
+                var comment = new Comment
+                {
+                    Id = int.Parse(commentDto.Id),
+                    Content = commentDto.Content,
+                    CreatedAt = commentDto.CreatedAt,
+                    UserId = int.Parse(commentDto.User.Id),
+                    PostId = PostId
+                };
                 Comments.Add(comment);
             }
         }

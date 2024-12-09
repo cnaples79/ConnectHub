@@ -1,6 +1,9 @@
 using ConnectHub.App.Services;
 using ConnectHub.Shared.Models;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace ConnectHub.App.ViewModels
 {
@@ -8,48 +11,71 @@ namespace ConnectHub.App.ViewModels
     {
         private readonly IApiService _apiService;
         private readonly INavigationService _navigationService;
-        private User _user;
-        private bool _isLoading;
         private int _currentUserId;
 
-        public User User
-        {
-            get => _user;
-            set => SetProperty(ref _user, value);
-        }
+        [ObservableProperty]
+        private User? _user;
 
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
-        }
+        [ObservableProperty]
+        private ObservableCollection<Post> _userPosts = new();
+
+        [ObservableProperty]
+        private bool _isLoading;
+
+        [ObservableProperty]
+        private string _errorMessage = string.Empty;
 
         public ProfileViewModel(IApiService apiService, INavigationService navigationService, int currentUserId)
         {
+            Debug.WriteLine("Initializing ProfileViewModel...");
             _apiService = apiService;
             _navigationService = navigationService;
             _currentUserId = currentUserId;
             Title = "Profile";
-            LoadProfileCommand.Execute(null);
+            InitializeAsync();
         }
 
-        [RelayCommand]
-        private async Task LoadProfileAsync()
+        public async Task InitializeAsync()
         {
             try
             {
                 IsLoading = true;
-                var user = await _apiService.GetUserProfileAsync(_currentUserId);
-                User = user;
+                ErrorMessage = string.Empty;
+
+                Debug.WriteLine("Loading user profile...");
+                User = await _apiService.GetUserProfileAsync(_currentUserId);
+
+                Debug.WriteLine("Loading user posts...");
+                var postDtos = await _apiService.GetUserPostsAsync(User.Id, 1, 10);
+                UserPosts.Clear();
+                foreach (var postDto in postDtos)
+                {
+                    var post = new Post
+                    {
+                        Id = int.Parse(postDto.Id),
+                        Content = postDto.Content,
+                        CreatedAt = postDto.CreatedAt,
+                        UserId = User.Id,
+                        LikesCount = postDto.LikesCount
+                    };
+                    UserPosts.Add(post);
+                }
             }
             catch (Exception ex)
             {
-                await Application.Current.MainPage.DisplayAlert("Error", "Failed to load profile", "OK");
+                Debug.WriteLine($"Error loading profile: {ex.Message}");
+                ErrorMessage = "Unable to load profile. Please try again later.";
             }
             finally
             {
                 IsLoading = false;
             }
+        }
+
+        [RelayCommand]
+        private async Task RefreshProfile()
+        {
+            await InitializeAsync();
         }
 
         [RelayCommand]
