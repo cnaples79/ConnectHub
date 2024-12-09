@@ -308,7 +308,6 @@
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/obj/Debug/net8.0-maccatalyst/maccatalyst-x64/_ProcessedBundleResourcesPath.items
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/obj/Debug/net8.0-maccatalyst/maccatalyst-x64/_ProcessedContentPath.items
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/obj/Debug/net8.0-maccatalyst/maccatalyst-x64/ConnectHub.App.csproj.AssemblyReference.cache
-/Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/obj/Debug/net8.0-maccatalyst/maccatalyst-x64/resourcestamps/ConnectHub.Shared.stamp
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/obj/Debug/net8.0-maccatalyst/maccatalyst-x64/ConnectHub.App.GeneratedMSBuildEditorConfig.editorconfig
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/obj/Debug/net8.0-maccatalyst/maccatalyst-x64/ConnectHub.App.AssemblyInfoInputs.cache
 /Users/chasenaples/Windsurf_Projects/CascadeProjects/windsurf-project/ConnectHub/ConnectHub.App/obj/Debug/net8.0-maccatalyst/maccatalyst-x64/ConnectHub.App.AssemblyInfo.cs

@@ -34,9 +34,24 @@ namespace ConnectHub.App.ViewModels
             _apiService = apiService;
             _navigationService = navigationService;
             _posts = new ObservableCollection<PostDto>();
-            
-            // Load initial data
-            MainThread.BeginInvokeOnMainThread(async () => await LoadInitialData());
+        }
+
+        public async Task InitializeAsync()
+        {
+            try
+            {
+                Debug.WriteLine("Initializing FeedViewModel data...");
+                if (IsBusy)
+                    return;
+
+                await LoadInitialData();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in InitializeAsync: {ex.Message}");
+                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                StatusMessage = "Error initializing feed. Please try again later.";
+            }
         }
 
         [RelayCommand]

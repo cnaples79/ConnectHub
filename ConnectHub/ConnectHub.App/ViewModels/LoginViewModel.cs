@@ -89,16 +89,16 @@ namespace ConnectHub.App.ViewModels
                         try
                         {
                             Debug.WriteLine("Attempting to navigate to feed page...");
-                            await _navigationService.NavigateToAsync("//main/feed");
+                            await Shell.Current.GoToAsync("///feed");
                             Debug.WriteLine("Navigation successful");
                         }
                         catch (Exception navEx)
                         {
                             Debug.WriteLine($"Navigation failed: {navEx.Message}");
                             Debug.WriteLine($"Stack trace: {navEx.StackTrace}");
-                            await Shell.Current.DisplayAlert("Navigation Error", 
+                            await Shell.Current.DisplayAlert("Error", 
                                 "Unable to navigate after login. Please try again.", "OK");
-                            throw;
+                            // Don't rethrow - handle gracefully
                         }
                     });
                 }
