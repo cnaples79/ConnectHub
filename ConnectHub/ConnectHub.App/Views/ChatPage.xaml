@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="ConnectHub.App.Views.ChatPage"
              xmlns:viewmodel="clr-namespace:ConnectHub.App.ViewModels"
              xmlns:model="clr-namespace:ConnectHub.Shared.Models;assembly=ConnectHub.Shared"
+             xmlns:converters="clr-namespace:ConnectHub.App.Converters;assembly=ConnectHub.App"
+             x:Class="ConnectHub.App.Views.ChatPage"
              x:DataType="viewmodel:ChatViewModel"
              BackgroundColor="#121212"
              Title="Chat">
@@ -17,7 +18,13 @@
                           RemainingItemsThreshold="2">
                 <CollectionView.EmptyView>
                     <StackLayout HorizontalOptions="Center" VerticalOptions="Center">
+                        <Label Text="{Binding ErrorMessage}"
+                               IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotEmptyConverter}}"
+                               TextColor="#757575"
+                               FontSize="16"
+                               HorizontalOptions="Center"/>
                         <Label Text="No messages yet"
+                               IsVisible="{Binding ErrorMessage, Converter={StaticResource StringEmptyConverter}}"
                                TextColor="#757575"
                                FontSize="16"
                                HorizontalOptions="Center"/>
@@ -65,7 +72,8 @@
                        PlaceholderColor="#757575"
                        Placeholder="Type a message..."
                        VerticalOptions="Center"
-                       HeightRequest="40"/>
+                       HeightRequest="40"
+                       IsEnabled="{Binding IsSending, Converter={converters:InverseBoolConverter}}"/>
             </Frame>
 
             <Button Grid.Column="1"
@@ -76,7 +84,8 @@
                     CornerRadius="20"
                     HeightRequest="40"
                     WidthRequest="80"
-                    FontAttributes="Bold"/>
+                    FontAttributes="Bold"
+                    IsEnabled="{Binding IsSending, Converter={converters:InverseBoolConverter}}"/>
         </Grid>
 
         <!-- Loading Indicator -->

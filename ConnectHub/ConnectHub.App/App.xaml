@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version = "1.0" encoding = "UTF-8" ?>
 <Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:ConnectHub.App"
-             xmlns:converters="clr-namespace:ConnectHub.App.Converters"
+             xmlns:converters="clr-namespace:ConnectHub.App.Converters;assembly=ConnectHub.App"
              x:Class="ConnectHub.App.App">
     <Application.Resources>
         <ResourceDictionary>
@@ -102,7 +102,9 @@
             </Style>
             
             <!-- Converters -->
-            <converters:BooleanToObjectConverter x:Key="InverseBoolConverter" />
+            <converters:StringEmptyConverter x:Key="StringEmptyConverter" />
+            <converters:StringNotEmptyConverter x:Key="StringNotEmptyConverter" />
+            <converters:InverseBoolConverter x:Key="InverseBoolConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
