@@ -48,38 +48,61 @@ namespace ConnectHub.App.ViewModels
                 var userId = _preferences.Get<int>("user_id", 0);
                 if (userId == 0)
                 {
-                    throw new Exception("User ID not found");
+                    ErrorMessage = "User ID not found";
+                    return;
                 }
 
                 Debug.WriteLine($"Loading profile for user {userId}...");
                 User = await _apiService.GetUserProfileAsync(userId);
-
-                Debug.WriteLine("Loading user posts...");
-                var postDtos = await _apiService.GetUserPostsAsync(userId, 1, 10);
-                UserPosts.Clear();
-                foreach (var postDto in postDtos)
+                
+                if (User != null)
                 {
-                    var post = new Post
-                    {
-                        Id = int.Parse(postDto.Id),
-                        Content = postDto.Content,
-                        CreatedAt = postDto.CreatedAt,
-                        UserId = userId,
-                        LikesCount = postDto.LikesCount
-                    };
-                    UserPosts.Add(post);
+                    await LoadUserPosts(userId);
+                    Debug.WriteLine("Profile loaded successfully");
                 }
-                Debug.WriteLine($"Loaded {UserPosts.Count} posts");
+                else
+                {
+                    ErrorMessage = "Unable to load profile. Please try again later.";
+                    Debug.WriteLine("Failed to load user profile - User is null");
+                }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error loading profile: {ex.Message}");
                 ErrorMessage = "Unable to load profile. Please try again later.";
-                await Application.Current.MainPage.DisplayAlert("Error", ErrorMessage, "OK");
             }
             finally
             {
                 IsLoading = false;
+            }
+        }
+
+        private async Task LoadUserPosts(int userId)
+        {
+            try
+            {
+                var posts = await _apiService.GetUserPostsAsync(userId, 1, 10);
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    UserPosts.Clear();
+                    foreach (var post in posts)
+                    {
+                        UserPosts.Add(new Post 
+                        { 
+                            Id = int.Parse(post.Id),
+                            Content = post.Content,
+                            CreatedAt = post.CreatedAt,
+                            ImageUrl = post.ImageUrl,
+                            LikesCount = post.LikesCount,
+                            CommentsCount = post.CommentsCount
+                        });
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error loading user posts: {ex.Message}");
+                ErrorMessage = "Unable to load posts. Please try again later.";
             }
         }
 

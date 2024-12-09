@@ -46,13 +46,13 @@ namespace ConnectHub.App.ViewModels
             if (string.IsNullOrWhiteSpace(Message))
                 return;
 
+            var messageToSend = Message;
+            Message = string.Empty; // Clear input immediately for better UX
+
             try
             {
                 IsLoading = true;
-                Debug.WriteLine($"Sending message: {Message}");
-                
-                var messageToSend = Message;
-                Message = string.Empty; // Clear input immediately for better UX
+                Debug.WriteLine($"Sending message: {messageToSend}");
                 
                 await _apiService.SendMessageAsync(messageToSend);
                 
@@ -63,6 +63,7 @@ namespace ConnectHub.App.ViewModels
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error sending message: {ex.Message}");
+                Message = messageToSend; // Restore the message if sending failed
                 await Application.Current.MainPage.DisplayAlert("Error", "Failed to send message. Please try again.", "OK");
             }
             finally
@@ -89,16 +90,24 @@ namespace ConnectHub.App.ViewModels
 
                 var messages = await _apiService.GetChatHistoryAsync();
                 
-                MainThread.BeginInvokeOnMainThread(() =>
+                if (messages != null)
                 {
-                    Messages.Clear();
-                    foreach (var message in messages.OrderByDescending(m => m.CreatedAt))
+                    MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        Messages.Add(message);
-                    }
-                });
-                
-                Debug.WriteLine($"Loaded {messages.Count} messages");
+                        Messages.Clear();
+                        foreach (var message in messages.OrderByDescending(m => m.CreatedAt))
+                        {
+                            Messages.Add(message);
+                        }
+                    });
+                    
+                    Debug.WriteLine($"Loaded {messages.Count} messages");
+                }
+                else
+                {
+                    Debug.WriteLine("No messages returned from API");
+                    await Application.Current.MainPage.DisplayAlert("Error", "Failed to load messages. Please try again.", "OK");
+                }
             }
             catch (Exception ex)
             {
