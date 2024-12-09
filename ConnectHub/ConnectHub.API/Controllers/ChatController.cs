@@ -7,13 +7,13 @@ using System.Security.Claims;
 namespace ConnectHub.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/chat")]
     [Authorize]
     public class ChatController : ControllerBase
     {
-        private readonly ChatService _chatService;
+        private readonly IChatService _chatService;
 
-        public ChatController(ChatService chatService)
+        public ChatController(IChatService chatService)
         {
             _chatService = chatService;
         }

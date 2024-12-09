@@ -56,7 +56,20 @@ namespace ConnectHub.App.ViewModels
         private async Task SendMessage()
         {
             if (string.IsNullOrWhiteSpace(Message) || IsSending || SelectedReceiverId == 0)
+            {
+                if (SelectedReceiverId == 0)
+                {
+                    ErrorMessage = "Please select a receiver";
+                }
                 return;
+            }
+
+            var token = _preferences.Get<string>("token", null);
+            if (string.IsNullOrEmpty(token))
+            {
+                ErrorMessage = "Please log in to send messages";
+                return;
+            }
 
             var messageToSend = Message;
             Message = string.Empty; // Clear input immediately for better UX
@@ -64,6 +77,7 @@ namespace ConnectHub.App.ViewModels
             try
             {
                 IsSending = true;
+                ErrorMessage = string.Empty;
                 Debug.WriteLine($"Sending message: {messageToSend} to receiver: {SelectedReceiverId}");
                 
                 await _apiService.SendMessageAsync(messageToSend, SelectedReceiverId);
@@ -71,14 +85,17 @@ namespace ConnectHub.App.ViewModels
                 
                 Debug.WriteLine("Message sent successfully");
             }
+            catch (UnauthorizedAccessException)
+            {
+                Debug.WriteLine("Unauthorized: User not logged in");
+                ErrorMessage = "Please log in to send messages";
+                Message = messageToSend;
+            }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error sending message: {ex.Message}");
-                Message = messageToSend; // Restore the message if sending failed
-                await MainThread.InvokeOnMainThreadAsync(async () =>
-                {
-                    await Application.Current.MainPage.DisplayAlert("Error", "Failed to send message. Please try again.", "OK");
-                });
+                Message = messageToSend;
+                ErrorMessage = "Failed to send message. Please try again.";
             }
             finally
             {
@@ -101,46 +118,33 @@ namespace ConnectHub.App.ViewModels
                 IsBusy = true;
                 IsLoading = true;
                 ErrorMessage = string.Empty;
-                
-                Debug.WriteLine("Loading chat messages...");
 
-                var userId = _preferences.Get<int>("user_id", 0);
-                if (userId == 0)
+                var token = _preferences.Get<string>("token", null);
+                if (string.IsNullOrEmpty(token))
                 {
-                    ErrorMessage = "Please log in to view messages.";
-                    Debug.WriteLine("User ID not found");
+                    ErrorMessage = "Please log in to view messages";
                     return;
                 }
 
                 var messages = await _apiService.GetChatHistoryAsync();
                 
-                if (messages != null)
+                MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    await MainThread.InvokeOnMainThreadAsync(() =>
+                    Messages.Clear();
+                    foreach (var message in messages.OrderByDescending(m => m.CreatedAt))
                     {
-                        Messages.Clear();
-                        foreach (var message in messages.OrderByDescending(m => m.CreatedAt))
-                        {
-                            Messages.Add(message);
-                        }
-                    });
-                    
-                    Debug.WriteLine($"Loaded {messages.Count} messages");
-                }
-                else
-                {
-                    Debug.WriteLine("No messages returned from API");
-                    ErrorMessage = "Failed to load messages. Please try again.";
-                }
+                        Messages.Add(message);
+                    }
+                });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                ErrorMessage = "Please log in to view messages";
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error loading messages: {ex.Message}");
-                ErrorMessage = "Failed to load messages. Please try again.";
-                await MainThread.InvokeOnMainThreadAsync(async () =>
-                {
-                    await Application.Current.MainPage.DisplayAlert("Error", ErrorMessage, "OK");
-                });
+                ErrorMessage = "Unable to load messages. Please try again.";
             }
             finally
             {
