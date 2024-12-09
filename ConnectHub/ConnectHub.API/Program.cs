@@ -42,6 +42,7 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<FileUploadService>();
+builder.Services.AddScoped<ChatService>();
 
 // Add SignalR
 builder.Services.AddSignalR();

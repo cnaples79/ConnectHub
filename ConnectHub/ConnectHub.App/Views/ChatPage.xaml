@@ -76,7 +76,19 @@
                        IsEnabled="{Binding IsSending, Converter={converters:InverseBoolConverter}}"/>
             </Frame>
 
-            <Button Grid.Column="1"
+            <Picker Grid.Column="1"
+                    Title="Select Receiver"
+                    SelectedItem="{Binding SelectedReceiverId}">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:Int32}">
+                        <x:Int32>1</x:Int32>
+                        <x:Int32>2</x:Int32>
+                        <x:Int32>3</x:Int32>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+
+            <Button Grid.Column="2"
                     Text="Send"
                     Command="{Binding SendMessageCommand}"
                     BackgroundColor="#2196F3"

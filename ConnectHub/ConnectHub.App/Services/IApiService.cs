@@ -19,7 +19,7 @@ namespace ConnectHub.App.Services
         Task<List<Post>> SearchPostsAsync(string query);
         Task<List<Post>> GetNearbyPostsAsync(double latitude, double longitude);
         Task<List<ChatMessage>> GetChatHistoryAsync();
-        Task SendMessageAsync(string message);
+        Task SendMessageAsync(string message, int receiverId);
         Task<bool> ReportPostAsync(int postId);
         Task<User> GetUserProfileAsync(int userId);
         Task UpdateProfileAsync(string username, Stream? profilePictureStream = null);

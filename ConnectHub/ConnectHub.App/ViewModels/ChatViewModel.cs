@@ -24,6 +24,9 @@ namespace ConnectHub.App.ViewModels
         [ObservableProperty]
         private string _errorMessage = string.Empty;
 
+        [ObservableProperty]
+        private int _selectedReceiverId;
+
         public ObservableCollection<ChatMessage> Messages { get; } = new();
 
         public ChatViewModel(IApiService apiService, IPreferences preferences)
@@ -52,7 +55,7 @@ namespace ConnectHub.App.ViewModels
         [RelayCommand]
         private async Task SendMessage()
         {
-            if (string.IsNullOrWhiteSpace(Message) || IsSending)
+            if (string.IsNullOrWhiteSpace(Message) || IsSending || SelectedReceiverId == 0)
                 return;
 
             var messageToSend = Message;
@@ -61,9 +64,9 @@ namespace ConnectHub.App.ViewModels
             try
             {
                 IsSending = true;
-                Debug.WriteLine($"Sending message: {messageToSend}");
+                Debug.WriteLine($"Sending message: {messageToSend} to receiver: {SelectedReceiverId}");
                 
-                await _apiService.SendMessageAsync(messageToSend);
+                await _apiService.SendMessageAsync(messageToSend, SelectedReceiverId);
                 await LoadMessagesAsync();
                 
                 Debug.WriteLine("Message sent successfully");
