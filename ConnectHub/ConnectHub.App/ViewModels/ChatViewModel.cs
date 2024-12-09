@@ -60,6 +60,7 @@ namespace ConnectHub.App.ViewModels
                 if (SelectedReceiverId == 0)
                 {
                     ErrorMessage = "Please select a receiver";
+                    Debug.WriteLine("Send message failed: No receiver selected");
                 }
                 return;
             }
@@ -68,6 +69,7 @@ namespace ConnectHub.App.ViewModels
             if (string.IsNullOrEmpty(token))
             {
                 ErrorMessage = "Please log in to send messages";
+                Debug.WriteLine("Send message failed: User not logged in");
                 return;
             }
 
@@ -81,7 +83,7 @@ namespace ConnectHub.App.ViewModels
                 Debug.WriteLine($"Sending message: {messageToSend} to receiver: {SelectedReceiverId}");
                 
                 await _apiService.SendMessageAsync(messageToSend, SelectedReceiverId);
-                await LoadMessagesAsync();
+                await LoadMessagesAsync(); // Reload messages after sending
                 
                 Debug.WriteLine("Message sent successfully");
             }
@@ -89,12 +91,13 @@ namespace ConnectHub.App.ViewModels
             {
                 Debug.WriteLine("Unauthorized: User not logged in");
                 ErrorMessage = "Please log in to send messages";
-                Message = messageToSend;
+                Message = messageToSend; // Restore the message
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error sending message: {ex.Message}");
-                Message = messageToSend;
+                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                Message = messageToSend; // Restore the message
                 ErrorMessage = "Failed to send message. Please try again.";
             }
             finally

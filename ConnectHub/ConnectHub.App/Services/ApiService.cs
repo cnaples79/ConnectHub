@@ -379,16 +379,21 @@ namespace ConnectHub.App.Services
 
         public async Task SendMessageAsync(string message, int receiverId)
         {
-            Debug.WriteLine("Sending message...");
+            Debug.WriteLine($"Sending message to receiver {receiverId}...");
             try
             {
                 var content = new { Content = message, ReceiverId = receiverId };
-                var response = await _httpClient.PostAsJsonAsync("/api/chat/send", content);
+                Debug.WriteLine($"Sending request to api/chat/send with content: {System.Text.Json.JsonSerializer.Serialize(content)}");
+                var response = await _httpClient.PostAsJsonAsync("api/chat/send", content);
+                Debug.WriteLine($"Send message response status: {response.StatusCode}");
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Debug.WriteLine($"Response content: {responseContent}");
                 response.EnsureSuccessStatusCode();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error sending message: {ex.Message}");
+                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
                 throw;
             }
         }
